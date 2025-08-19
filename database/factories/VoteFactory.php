@@ -17,7 +17,10 @@ class VoteFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title'=>fake()->name(),
+            'decription'=>fake()->realText(100),
+            'start_date'=>$startDate,
+            'end_date'=> $endDate,
         ];
     }
 }

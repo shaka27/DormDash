@@ -9,15 +9,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Vote extends Model
 {
-    protected $fillable = ['VoteTitle', 'VoteDescription', 'VoteStartDate', 'VoteEndDate'];
+    protected $fillable = ['title', 'description', 'start_date', 'end_date']; // Match migration columns
 
     public function options()
     {
-        return $this->hasMany(VoteOption::class, 'Vote_ID');
+        return $this->hasMany(VoteOption::class, 'vote_id'); // Use snake_case
     }
 
     public function responses()
     {
-        return $this->hasMany(VoteResponse::class, 'Vote_ID');
-    }
+        return $this->hasMany(VoteResponse::class, 'vote_id'); // Use snake_case
+    }
 }

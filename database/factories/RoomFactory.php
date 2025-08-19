@@ -17,7 +17,8 @@ class RoomFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'number'=>fake()->numberBetween(1, 200),
+            'status'=>fake()->realText(1),
         ];
     }
 }

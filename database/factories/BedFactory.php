@@ -17,7 +17,7 @@ class BedFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'description' => fake()->realText(100),
         ];
     }
 }

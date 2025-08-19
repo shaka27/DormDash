@@ -17,7 +17,9 @@ class NotificationFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'type'=>fake()->name(),
+            'content'=>fake()->realText(100),
+            'is_read'=>fake()->boolean(),
         ];
     }
 }

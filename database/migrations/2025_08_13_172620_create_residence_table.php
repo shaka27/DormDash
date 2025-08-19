@@ -21,13 +21,14 @@ return new class extends Migration
                   ->references('id')->on('campus')
                   ->onDelete('cascade'); 
 
-            $table->unsignedBigInteger('role_id');
-            $table->foreign('role_id')
-                  ->references('id')->on('role')
-                  ->onDelete('cascade');
+            // FK -> room.room_id (replaces role_id)
+            $table->unsignedBigInteger('room_id');
+            $table->foreign('room_id')
+                  ->references('room_id')->on('room')
+                  ->cascadeOnDelete();
             $table->timestamps();
-        });
-    }
+        });
+    }
 
     /**
      * Reverse the migrations.
