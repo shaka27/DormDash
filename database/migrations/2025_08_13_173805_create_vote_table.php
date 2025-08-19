@@ -11,16 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vote', function (Blueprint $table) {
+        Schema::create('vote', function (Blueprint $table)
+        {
             $table->id();
-
             $table->string('title');
             $table->string('description');
-            $table->Datetime('startDate');
-            $table->Datetime('endDate');
-
-
-
+            $table->datetime('start_date'); // Changed to snake_case
+            $table->datetime('end_date');   // Changed to snake_case
             $table->timestamps();
         });
     }
