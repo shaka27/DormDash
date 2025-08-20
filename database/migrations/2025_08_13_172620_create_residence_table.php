@@ -16,16 +16,9 @@ return new class extends Migration
             $table->string('name'); 
             $table->unsignedBigInteger('campus_id');
             $table->foreign('campus_id')
-                  ->references('id')->on('campus')
-                  ->onDelete('cascade'); 
-
-            /*There's no role_id on the residence table/entity 
-            
-            $table->unsignedBigInteger('role_id');
-            $table->foreign('role_id')
-                  ->references('id')->on('role')
-                  ->onDelete('cascade');*/
-            $table->timestamps();
+                ->references('id')->on('campus')
+                ->onDelete('cascade');
+            $table->timestamps(); 
         });
     }
 
@@ -35,5 +28,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('residence');
-    }
+    }
 };
