@@ -18,5 +18,5 @@ class Vote extends Model
     public function responses()
     {
         return $this->hasMany(VoteResponse::class, 'vote_id'); // Use snake_case
-    }
+    }
 }

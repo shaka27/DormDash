@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Residence extends Model
 {
-    protected $fillable = ['name', 'campus_id']; 
+    protected $fillable = ['res_name', 'campus_id','room_id'];
 
     public function campus()
     {

@@ -2,31 +2,30 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
     /**
      * The attributes that are mass assignable.
-     *
-     * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
+        'contact_num',
         'password',
+        'gender',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
+     * The attributes that should be hidden for arrays.
      */
     protected $hidden = [
         'password',
@@ -34,15 +33,49 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * The attributes that should be cast.
      */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',   // Laravel 10+ password hashing cast
+    ];
+
+    /* -------------------
+       Relationships
+    -------------------- */
+
+    public function groupMemberships() {
+        return $this->hasMany(GroupMember::class);
     }
+
+    public function votes() {
+        return $this->hasMany(Vote::class);
+    }
+
+    public function voteResponses() {
+        return $this->hasMany(VoteResponse::class);
+    }
+
+    public function messagesSent() {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function messagesReceived() {
+        return $this->hasMany(Message::class, 'receiver_id');
+    }
+
+    public function notifications() {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function events() {
+        return $this->belongsToMany(Event::class, 'event_attendance')
+                    ->withPivot('RSVPStatus')
+                    ->withTimestamps();
+    }
+
+    public function roles() {
+        return $this->belongsToMany(Role::class, 'user_role')
+                    ->withTimestamps();
+    }
 }

@@ -16,9 +16,14 @@ return new class extends Migration
             $table->string('name'); 
             $table->unsignedBigInteger('campus_id');
             $table->foreign('campus_id')
-                ->references('id')->on('campus')
-                ->onDelete('cascade');
-            $table->timestamps(); 
+                  ->references('id')->on('campus')
+                  ->onDelete('cascade'); 
+
+            $table->unsignedBigInteger('role_id');
+            $table->foreign('role_id')
+                  ->references('id')->on('role')
+                  ->onDelete('cascade');
+            $table->timestamps();
         });
     }
 
