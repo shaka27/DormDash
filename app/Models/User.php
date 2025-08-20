@@ -44,38 +44,47 @@ class User extends Authenticatable
        Relationships
     -------------------- */
 
-    public function groupMemberships() {
+    public function groupMemberships() 
+    {
         return $this->hasMany(GroupMember::class);
     }
 
-    public function votes() {
+    public function votes()
+    {
         return $this->hasMany(Vote::class);
     }
 
-    public function voteResponses() {
+    public function voteResponses()
+    {
         return $this->hasMany(VoteResponse::class);
     }
 
-    public function messagesSent() {
+    public function messagesSent()
+    {
         return $this->hasMany(Message::class, 'sender_id');
     }
 
-    public function messagesReceived() {
+    public function messagesReceived() 
+    {
         return $this->hasMany(Message::class, 'receiver_id');
     }
 
-    public function notifications() {
+    public function notifications() 
+    {
         return $this->hasMany(Notification::class);
     }
 
-    public function events() {
+    public function events() 
+    {
         return $this->belongsToMany(Event::class, 'event_attendance')
                     ->withPivot('RSVPStatus')
                     ->withTimestamps();
     }
 
-    public function roles() {
+    public function roles()
+    {
         return $this->belongsToMany(Role::class, 'user_role')
                     ->withTimestamps();
-    }
+    }
+
 }

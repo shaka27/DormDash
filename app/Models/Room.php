@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Room extends Model
 {
+     // Explicitly define the table name
+    protected $table = 'room';
+    
     protected $fillable = ['number', 'status', 'residence_id']; 
 
     public function residence()
