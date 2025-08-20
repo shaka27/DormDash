@@ -13,22 +13,14 @@ return new class extends Migration
     {
         Schema::create('residence', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-
-
+            $table->string('name'); 
             $table->unsignedBigInteger('campus_id');
             $table->foreign('campus_id')
-                  ->references('id')->on('campus')
-                  ->onDelete('cascade'); 
-
-            // FK -> room.room_id (replaces role_id)
-            $table->unsignedBigInteger('room_id');
-            $table->foreign('room_id')
-                  ->references('room_id')->on('room')
-                  ->cascadeOnDelete();
-            $table->timestamps();
-        });
-    }
+                ->references('id')->on('campus')
+                ->onDelete('cascade');
+            $table->timestamps(); 
+        });
+    }
 
     /**
      * Reverse the migrations.
@@ -36,5 +28,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('residence');
-    }
+    }
 };
