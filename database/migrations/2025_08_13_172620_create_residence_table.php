@@ -19,10 +19,12 @@ return new class extends Migration
                   ->references('id')->on('campus')
                   ->onDelete('cascade'); 
 
+            /*There's no role_id on the residence table/entity 
+            
             $table->unsignedBigInteger('role_id');
             $table->foreign('role_id')
                   ->references('id')->on('role')
-                  ->onDelete('cascade');
+                  ->onDelete('cascade');*/
             $table->timestamps();
         });
     }
