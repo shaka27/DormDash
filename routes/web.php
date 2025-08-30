@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use app\Http\Controllers\UserController;
+use app\Http\Controllers\UserAPIController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -11,6 +13,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
     })->name('dashboard');
+
+    Route::resource('users', UserController::class);
+    Route::apiResource('users', UserAPIController::class);
 });
 
 require __DIR__.'/settings.php';
