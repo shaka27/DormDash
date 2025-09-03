@@ -14,8 +14,16 @@ Route::get('/', function () {
     ]);
 });
 
+Route::get('/', function () {
+    return Inertia::render('Welcome');
+});
+
 Route::get('/inertia-login', function () {
-    return Inertia::render('inertia-login');
+    return Inertia::render('auth/New_Login');
+});
+
+Route::get('/inertia-register', function () {
+    return Inertia::render('auth/New_Register');
 });
 
 Route::get('/dashboard', function () {

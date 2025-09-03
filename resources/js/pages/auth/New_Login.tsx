@@ -1,7 +1,27 @@
-import React from "react";
+import React, { ChangeEvent, FormEvent, useState } from "react";
 import { Head } from "@inertiajs/react";
+import { Inertia } from "@inertiajs/inertia";
 
-export default function Login() {
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
+
+export default function New_Login() {
+  const [values, setValues] = useState<LoginFormValues>({
+    email: "",
+    password: "",
+  });
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setValues({ ...values, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    Inertia.post("/login", values as Record<string, any>);
+  };
+
   return (
     <>
       <Head title="Login" />
@@ -14,31 +34,34 @@ export default function Login() {
           <p className="text-center text-gray-500 mb-8">
             Please sign in to your account
           </p>
-
           {/* Form */}
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Email
               </label>
               <input
                 type="email"
+                name="email"
+                value={values.email}
+                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="you@example.com"
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
               </label>
               <input
                 type="password"
+                name="password"
+                value={values.password}
+                onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="••••••••"
               />
             </div>
-
             {/* Buttons */}
             <button
               type="submit"
@@ -47,10 +70,9 @@ export default function Login() {
               Sign In
             </button>
           </form>
-
           {/* Footer */}
           <p className="mt-6 text-center text-sm text-gray-500">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <a href="#" className="text-purple-600 hover:underline">
               Sign up
             </a>
