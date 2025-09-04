@@ -3,21 +3,29 @@ import { Head } from "@inertiajs/react";
 import { Inertia } from "@inertiajs/inertia";
 
 interface RegisterFormValues {
-  name: string;
+  first_name: string;
+  last_name: string;
   email: string;
+  contact_number: string;
+  gender: string;
+  student_number: string;
   password: string;
   password_confirmation: string;
 }
 
 export default function New_Register() {
   const [values, setValues] = useState<RegisterFormValues>({
-    name: "",
+    first_name: "",
+    last_name: "",
     email: "",
+    contact_number: "",
+    gender: "",
+    student_number: "",
     password: "",
     password_confirmation: "",
   });
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setValues({ ...values, [e.target.name]: e.target.value });
   };
 
@@ -40,18 +48,33 @@ export default function New_Register() {
           </p>
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Full Name
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={values.name}
-                onChange={handleChange}
-                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                placeholder="John Doe"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  name="first_name"
+                  value={values.first_name}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  placeholder="John"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  name="last_name"
+                  value={values.last_name}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  placeholder="Doe"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -65,6 +88,51 @@ export default function New_Register() {
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="you@example.com"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Contact Number
+              </label>
+              <input
+                type="tel"
+                name="contact_number"
+                value={values.contact_number}
+                onChange={handleChange}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                placeholder="+27 12 345 6789"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Gender
+                </label>
+                <select
+                  name="gender"
+                  value={values.gender}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                  <option value="prefer_not_to_say">Prefer not to say</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Student Number
+                </label>
+                <input
+                  type="text"
+                  name="student_number"
+                  value={values.student_number}
+                  onChange={handleChange}
+                  className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  placeholder="2024123456"
+                />
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
