@@ -31,7 +31,7 @@ export default function New_Register() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    Inertia.post("/login", values as Record<string, any>);
+    Inertia.get("/login", values as Record<string, any>);
   };
 
   return (
