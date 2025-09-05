@@ -1,3 +1,30 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* resources/css/app.css */
+
+/* Your custom styles can go here */
+body {
+    font-family: 'Nunito', sans-serif;
+}
+
+/* Custom overrides for your app */
+.sidebar {
+    min-height: 100vh;
+}
+
+.btn-notification {
+    border-color: #6f42c1; /* purple border */
+    color: #6f42c1;        /* purple text */
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .btn-notification:hover {
+    background-color: #6f42c1; /* purple background */
+    color: #fff;              /* white icon/text */
+  }
+  
+
+/* You can add more custom styles here */

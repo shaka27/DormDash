@@ -31,7 +31,7 @@ export default function New_Register() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    Inertia.post("/register", values as Record<string, any>);
+    Inertia.post("/login", values as Record<string, any>);
   };
 
   return (
@@ -171,7 +171,7 @@ export default function New_Register() {
           {/* Footer */}
           <p className="mt-6 text-center text-sm text-gray-500">
             Already have an account?{" "}
-            <a href="#" className="text-purple-600 hover:underline">
+            <a href="/login" className="text-purple-600 hover:underline">
               Sign in
             </a>
           </p>

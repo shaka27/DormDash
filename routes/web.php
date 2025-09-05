@@ -5,34 +5,22 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => false,
-        'canRegister' => false,
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
-});
+// Home page
+Route::get('/', fn () => Inertia::render('auth/New_Login'));
 
-Route::get('/', function () {
-    return Inertia::render('Welcome');
-});
-
-Route::get('/inertia-login', function () {
+Route::get('/login', function () {
     return Inertia::render('auth/New_Login');
 });
 
-Route::get('/inertia-register', function () {
+Route::get('/register', function () {
     return Inertia::render('auth/New_Register');
 });
-
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->name('dashboard');
-
-Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+// Student dashboard pages
+Route::get('/StudentDashboard', fn () => Inertia::render('Student_Dashboard/StudentDashboard'));
+Route::get('/RoomDetails', fn () => Inertia::render('Student_Dashboard/RoomDetails'));
+Route::get('/VotingCentre', fn () => Inertia::render('Student_Dashboard/VotingCentre'));
+Route::get('/Events', fn () => Inertia::render('Student_Dashboard/Events'));
+Route::get('/StudentLayout', fn () => Inertia::render('Student_Dashboard/StudentLayout'));
+Route::get('/Messages', fn() => Inertia::render('Student_Dashboard/Messages'))->name('messages');
+Route::get('/Profile', fn() => Inertia::render('Student_Dashboard/Profile'))->name('profile');
+Route::get('/Notifications', fn() => Inertia::render('Student_Dashboard/Notifications'))->name('notifications');

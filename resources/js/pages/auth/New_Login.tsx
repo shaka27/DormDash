@@ -19,7 +19,7 @@ export default function New_Login() {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    Inertia.post("/login", values as Record<string, any>);
+    Inertia.get("/StudentDashboard", values as Record<string, any>);
   };
 
   return (
@@ -73,7 +73,7 @@ export default function New_Login() {
           {/* Footer */}
           <p className="mt-6 text-center text-sm text-gray-500">
             Don't have an account?{" "}
-            <a href="#" className="text-purple-600 hover:underline">
+            <a href="/register" className="text-purple-600 hover:underline">
               Sign up
             </a>
           </p>
