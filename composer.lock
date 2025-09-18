@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "10a663781777d9a5e8b04827394ec541",
+    "content-hash": "7bcc86ddd673793b02f49cf0e6c985d8",
     "packages": [
         {
             "name": "brick/math",
@@ -1055,16 +1055,16 @@
         },
         {
             "name": "inertiajs/inertia-laravel",
-            "version": "v2.0.5",
+            "version": "v2.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/inertiajs/inertia-laravel.git",
-                "reference": "aa103fded86dd32e1b1d94b701a314cd22cecc8e"
+                "reference": "6d0afc3237c370036de4a703927b17a4e7b83298"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/inertiajs/inertia-laravel/zipball/aa103fded86dd32e1b1d94b701a314cd22cecc8e",
-                "reference": "aa103fded86dd32e1b1d94b701a314cd22cecc8e",
+                "url": "https://api.github.com/repos/inertiajs/inertia-laravel/zipball/6d0afc3237c370036de4a703927b17a4e7b83298",
+                "reference": "6d0afc3237c370036de4a703927b17a4e7b83298",
                 "shasum": ""
             },
             "require": {
@@ -1119,9 +1119,70 @@
             ],
             "support": {
                 "issues": "https://github.com/inertiajs/inertia-laravel/issues",
-                "source": "https://github.com/inertiajs/inertia-laravel/tree/v2.0.5"
+                "source": "https://github.com/inertiajs/inertia-laravel/tree/v2.0.6"
             },
-            "time": "2025-08-12T15:57:22+00:00"
+            "time": "2025-08-26T06:17:48+00:00"
+        },
+        {
+            "name": "laravel/breeze",
+            "version": "v2.3.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/laravel/breeze.git",
+                "reference": "1a29c5792818bd4cddf70b5f743a227e02fbcfcd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/laravel/breeze/zipball/1a29c5792818bd4cddf70b5f743a227e02fbcfcd",
+                "reference": "1a29c5792818bd4cddf70b5f743a227e02fbcfcd",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/console": "^11.0|^12.0",
+                "illuminate/filesystem": "^11.0|^12.0",
+                "illuminate/support": "^11.0|^12.0",
+                "illuminate/validation": "^11.0|^12.0",
+                "php": "^8.2.0",
+                "symfony/console": "^7.0"
+            },
+            "require-dev": {
+                "laravel/framework": "^11.0|^12.0",
+                "orchestra/testbench-core": "^9.0|^10.0",
+                "phpstan/phpstan": "^2.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Laravel\\Breeze\\BreezeServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Laravel\\Breeze\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "Minimal Laravel authentication scaffolding with Blade and Tailwind.",
+            "keywords": [
+                "auth",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/laravel/breeze/issues",
+                "source": "https://github.com/laravel/breeze"
+            },
+            "time": "2025-07-18T18:49:59+00:00"
         },
         {
             "name": "laravel/framework",
