@@ -31,3 +31,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/Profile', fn() => Inertia::render('Student_Dashboard/Profile'))->name('profile');
     Route::get('/Notifications', fn() => Inertia::render('Student_Dashboard/Notifications'))->name('notifications');
 });
+
+
+// Maintenance Page 
+Route::get('/maintenance', function () {
+    return Inertia::render('Maintenance/page'); // Must match folder + filename (without .tsx)
+})->name('maintenance');
+
+
