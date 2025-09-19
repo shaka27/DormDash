@@ -10,7 +10,6 @@ use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 
 
-
 class AuthController extends Controller
 {
     
