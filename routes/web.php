@@ -12,6 +12,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
+// Make the login page route as the main entry page
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
 // Login/Register pages
 Route::get('/login', fn () => Inertia::render('auth/New_Login'))->name('login');
