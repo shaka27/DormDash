@@ -7,63 +7,38 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
+
 
 class AuthController extends Controller
 {
-    /**
-     * Handle user login
-     */
+    
+    //Handle user login
     public function login(Request $request)
     {
         //  Validate login data
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
         ]);
 
-        // Attempt to find user and check password
-        $user = User::where('email', $request->email)->first();
-
-        // Check if user exists and password is correct
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['The provided credentials are incorrect.'],
-            ]);
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->intended('/StudentDashboard');
         }
 
-        //  Delete any existing tokens (optional, for security)
-        $user->tokens()->delete();
-
-        //  Create new API token
-        $token = $user->createToken('web-token')->plainTextToken;
-
-        // Check user roles
-        //$isAdmin = $user->roles->contains('name', 'admin');
-        $isAdmin = false; // Temporary fix - roles table doesn't exist
-
-        //  Return response with user data and token
-        return response()->json([
-            'message' => 'Login successful!',
-            'user' => [
-                'id' => $user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'email' => $user->email,
-                'is_admin' => $isAdmin,
-            ],
-            'token' => $token
-        ], 200);
+        return back()->withErrors([
+            'email' => 'The provided credentials do not match our records.',
+        ])->onlyInput('email');  //keeps email filled
     }
 
-    /**
-     * Handle user logout
-     */
     public function logout(Request $request)
     {
-        // Delete current access token
-        $request->user()->currentAccessToken()->delete();
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        return response()->json(['message' => 'Logged out successfully!']);
+        return redirect('/login');
     }
 
     /**
@@ -71,18 +46,7 @@ class AuthController extends Controller
      */
     public function user(Request $request)
     {
-        $user = $request->user();
-        //$isAdmin = $user->roles->contains('name', 'admin');
-        $isAdmin = false;
-
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'first_name' => $user->first_name,
-                'last_name' => $user->last_name,
-                'email' => $user->email,
-                'is_admin' => $isAdmin,
-            ]
-        ]);
+        return $request->user();
     }
+    
 }

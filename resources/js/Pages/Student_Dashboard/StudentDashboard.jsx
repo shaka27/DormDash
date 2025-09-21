@@ -1,4 +1,4 @@
-// resources/js/Pages/Dashboard.jsx
+
 import React from 'react';
 import { Head, Link } from '@inertiajs/react';
 import StudentLayout from './StudentLayout';
@@ -12,7 +12,7 @@ export default function StudentDashboard({ user, stats }) {
                 {/* Welcome Header */}
                 <div className="bg-white rounded shadow-sm p-6">
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        Welcome back, {user?.name || 'Evan'}!
+                        Welcome back, {user?.name}!
                     </h1>
                     <p className="text-gray-600">
                         Here's what's happening in your residence today.

@@ -70,8 +70,8 @@ export default function StudentLayout({ children }) {
       >
         <div className="d-flex justify-content-between align-items-center mb-4">
            
-          <h4 className="mb-0">
-          <Hotel size={18} className="me-1" />DormDash</h4>
+          <h1 className="mb-0">
+          <Hotel size={18} className="me-1" />DormDash</h1>
           <button
             onClick={() => setSidebarOpen(false)}
             className="btn-close d-lg-none"
