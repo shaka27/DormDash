@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Example: Route::apiResource('events', EventController::class);
 });
 
+// CRUD for Users
+Route::apiResource('users', UserController::class);
 
 //tESTING the CORS setup
 Route::get('/test-cors', function () {

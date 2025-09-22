@@ -7,8 +7,11 @@
         "dev": "vite"
     },
     "devDependencies": {
+        "@tailwindcss/forms": "^0.5.10",
+        "@types/react": "^19.1.12",
+        "@types/react-dom": "^19.1.9",
         "@vitejs/plugin-react": "^5.0.2",
-        "autoprefixer": "^10.4.21",
+        "autoprefixer": "^10.4.20",
         "axios": "^1.11.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^2.0.0",
@@ -19,6 +22,7 @@
     "dependencies": {
         "@headlessui/react": "^2.2.8",
         "@inertiajs/inertia": "^0.11.1",
+        "@inertiajs/inertia-react": "^0.8.1",
         "@inertiajs/react": "^2.1.2",
         "@popperjs/core": "^2.11.8",
         "@radix-ui/react-avatar": "^1.1.10",
@@ -26,36 +30,16 @@
         "@radix-ui/react-dialog": "^1.1.15",
         "@radix-ui/react-dropdown-menu": "^2.1.16",
         "@radix-ui/react-label": "^2.1.7",
+        "@radix-ui/react-select": "^2.2.6",
         "@radix-ui/react-separator": "^1.1.7",
         "@radix-ui/react-slot": "^1.2.3",
         "@radix-ui/react-tooltip": "^1.2.8",
         "bootstrap": "^5.3.8",
         "class-variance-authority": "^0.7.1",
-        "clsx": "^2.1.1",
-        "framer-motion": "^12.23.15",
+        "framer-motion": "^12.23.18",
         "lucide-react": "^0.542.0",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",
-        "react-router-dom": "^7.9.1",
         "tailwind-merge": "^3.3.1"
-    },
-    "name": "dormdashinertia",
-    "version": "1.0.0",
-    "description": "<p align=\"center\"><a href=\"https://laravel.com\" target=\"_blank\"><img src=\"https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg\" width=\"400\" alt=\"Laravel Logo\"></a></p>",
-    "main": "eslint.config.js",
-    "directories": {
-        "doc": "docs",
-        "test": "tests"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/DSVerster/dormdash-web.git"
-    },
-    "keywords": [],
-    "author": "",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/DSVerster/dormdash-web/issues"
-    },
-    "homepage": "https://github.com/DSVerster/dormdash-web#readme"
+    }
 }
