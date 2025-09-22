@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 
 export default function StudentLayout({ children }) {
+
+  //  Get auth.user from Inertia shared props
+  const { auth } = usePage().props;
+
   const { url } = usePage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -106,8 +110,8 @@ export default function StudentLayout({ children }) {
               S
             </div>
             <div className="ms-3">
-              <p className="mb-0 fw-bold small">Evan Titus</p>
-              <p className="mb-0 text-muted small">Room 204B</p>
+              <p className="mb-0 fw-bold small">{auth.user?.name}</p>
+              <p className="mb-0 text-muted small">Hard coded (Room 204B)</p>
             </div>
           </div>
           <Link
