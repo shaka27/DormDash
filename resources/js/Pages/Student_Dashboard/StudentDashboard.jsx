@@ -20,15 +20,8 @@ export default function StudentDashboard({ user, stats }) {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard
-                        title="Occupancy Rate"
-                        value="94%"
-                        subtitle="326 of 347 rooms occupied"
-                        icon="📊"
-                        iconBg="bg-blue-100"
-                        iconColor="text-blue-600"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                
                     <StatCard
                         title="Upcoming Events"
                         value="8"
@@ -37,14 +30,7 @@ export default function StudentDashboard({ user, stats }) {
                         iconBg="bg-green-100"
                         iconColor="text-green-600"
                     />
-                    <StatCard
-                        title="Active Groups"
-                        value="23"
-                        subtitle="Student committees"
-                        icon="👥"
-                        iconBg="bg-purple-100"
-                        iconColor="text-purple-600"
-                    />
+                
                     <StatCard
                         title="New Announcements"
                         value="3"

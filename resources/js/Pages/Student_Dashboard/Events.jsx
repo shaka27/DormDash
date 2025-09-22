@@ -37,9 +37,7 @@ export default function Events({ events }) {
                         <h1 className="text-2xl font-bold text-gray-900">Upcoming Events</h1>
                         <p className="text-gray-600">Stay updated with residence activities and important dates</p>
                     </div>
-                    <button className="px-4 py-2 bg-purple-50 text-black rounded hover:bg-purple-200 transition-colors">
-                        Add Event
-                    </button>
+                
                 </div>
             </div>
 
@@ -66,10 +64,8 @@ export default function Events({ events }) {
                                 </div>
                             </div>
                             <div className="flex flex-col space-y-2 ml-4">
-                                <button className="px-4 py-2 bg-green-50 text-black rounded text-sm hover:bg-green-200 transition-colors">
-                                    RSVP
-                                </button>
-                                <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50 transition-colors">
+                               
+                                <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-purple-300 transition-colors">
                                     Details
                                 </button>
                             </div>

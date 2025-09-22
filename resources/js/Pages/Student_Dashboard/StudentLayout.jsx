@@ -103,7 +103,7 @@ export default function StudentLayout({ children }) {
               className="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
               style={{ width: "40px", height: "40px" }}
             >
-              S
+              E
             </div>
             <div className="ms-3">
               <p className="mb-0 fw-bold small">Evan Titus</p>
