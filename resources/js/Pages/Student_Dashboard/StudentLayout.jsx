@@ -111,7 +111,7 @@ export default function StudentLayout({ children }) {
             </div>
             <div className="ms-3">
               <p className="mb-0 fw-bold small">{auth.user?.name}</p>
-              <p className="mb-0 text-muted small">Hard coded (Room 204B)</p>
+              <p className="mb-0 text-muted small">{auth.user?.email}</p>
             </div>
           </div>
           <Link
