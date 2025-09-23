@@ -22,13 +22,30 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
-    
-    // Add all your other protected API routes here
-    /*
+
+    // RESIDENCE protected routes here
+    Route::get('/residences', [App\Http\Controllers\ResidenceController::class, 'index']);
+    Route::post('/residences', [App\Http\Controllers\ResidenceController::class, 'store']);
+    Route::get('/residences/{id}', [App\Http\Controllers\ResidenceController::class, 'show']);  //Display single specific residence
+    Route::put('/residences/{id}', [App\Http\Controllers\ResidenceController::class, 'update']);
+    Route::delete('/residences/{id}', [App\Http\Controllers\ResidenceController::class, 'destroy']);
+
+    //ROOM protected routes here
+    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index']);
+    Route::post('/rooms', [App\Http\Controllers\RoomController::class, 'store']);
+    Route::get('/rooms/{id}', [App\Http\Controllers\RoomController::class, 'show']);  //Display single specific room
+    Route::put('/rooms/{id}', [App\Http\Controllers\RoomController::class,  'update']);
+    Route::delete('/rooms/{id}', [App\Http\Controllers\RoomController::class, 'destroy']);  
+
+    //NOTIFICATION protected routes here
+    Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
+    Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store']);
+    Route::get('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'show']);  //Display single specific notification
+    Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class,  'update']);
+    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);  
 
 
-    */
-    // Example: Route::apiResource('events', EventController::class);
+
 });
 
 
