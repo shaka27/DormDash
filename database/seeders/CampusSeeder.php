@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Campus;
 
 class CampusSeeder extends Seeder
 {
@@ -12,6 +13,6 @@ class CampusSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        Campus::factory(10)->create();
     }
 }
