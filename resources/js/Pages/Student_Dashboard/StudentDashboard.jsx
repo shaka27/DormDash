@@ -1,18 +1,21 @@
-
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import StudentLayout from './StudentLayout';
 
-export default function StudentDashboard({ user, stats }) {
+export default function StudentDashboard() {
+   
+    //  Get auth.user from Inertia shared props
+    const { auth } = usePage().props;
+
     return (
         <StudentLayout>
             <Head title="Student Dashboard" />
-            
+
             <div className="space-y-6">
                 {/* Welcome Header */}
                 <div className="bg-white rounded shadow-sm p-6">
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        Welcome back, {user?.name}!
+                        Welcome back, {auth.user?.name}!
                     </h1>
                     <p className="text-gray-600">
                         Here's what's happening in your residence today.
@@ -155,7 +158,6 @@ export default function StudentDashboard({ user, stats }) {
                             title="Events"
                             description="Browse events"
                         />
-                    
                     </div>
                 </div>
             </div>
@@ -186,7 +188,7 @@ function EventItem({ title, time, location, priority }) {
     const priorityColors = {
         high: 'bg-red-100 text-red-800',
         medium: 'bg-purple-100 text-purple-800',
-        low: 'bg-gray-100 text-gray-800'
+        low: 'bg-gray-100 text-gray-800',
     };
 
     return (

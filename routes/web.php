@@ -12,24 +12,28 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
+// Make the login page route as the main entry page
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 
 // Login/Register pages
 Route::get('/login', fn () => Inertia::render('auth/New_Login'))->name('login');
+Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', fn () => Inertia::render('auth/New_Register'))->name('register');
 
-// Login POST route
-Route::post('/login', [AuthController::class, 'login']);
-
-// Student Dashboard pages
+// Authenticated routes
 Route::middleware('auth')->group(function () {
+    // Student Dashboard – pass the authenticated user to the page
     Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
+
     Route::get('/RoomDetails', fn() => Inertia::render('Student_Dashboard/RoomDetails'));
+    Route::get('/Notifications', fn() => Inertia::render('Student_Dashboard/Notifications'))->name('notifications');
     Route::get('/VotingCentre', fn() => Inertia::render('Student_Dashboard/VotingCentre'));
     Route::get('/Events', fn() => Inertia::render('Student_Dashboard/Events'));
     Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
     Route::get('/Messages', fn() => Inertia::render('Student_Dashboard/Messages'))->name('messages');
     Route::get('/Profile', fn() => Inertia::render('Student_Dashboard/Profile'))->name('profile');
-    Route::get('/Notifications', fn() => Inertia::render('Student_Dashboard/Notifications'))->name('notifications');
 });
 
 
