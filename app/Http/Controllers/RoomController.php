@@ -9,12 +9,20 @@ use Illuminate\Http\Request;
 class RoomController extends Controller
 {
     /**
-     * Display all rooms.
+     * Fetch the room index page
      */
-    public function index()
+    public function index(Request $request)
     {
-        $rooms = Room::with('residence')->get();
-        return response()->json($rooms);
+        $rooms = Room::with('residence', 'users')->get();
+        return Inertia::render('Student_Dashboard/RoomIndex', ['rooms' => $rooms]);
+    }
+
+    /**
+     * Fetch the room details page
+     */
+    public function getRoomDetailsPage(Request $request, Room $room)
+    {
+        return Inertia::render('Student_Dashboard/RoomDetails', ['room' => $room->load('residence', 'users')]);
     }
 
     /**

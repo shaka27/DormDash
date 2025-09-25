@@ -1,6 +1,6 @@
 import StudentLayout from "./StudentLayout";
 
-export default function Notifications() {
+export default function Notifications({ notifications }) {
     return (
       <StudentLayout>
       <div className="p-6">

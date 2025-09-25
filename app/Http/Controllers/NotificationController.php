@@ -9,13 +9,15 @@ use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
+    // TODO: Implement possible notification navigation (optional)
+
     /**
      * List all notifications.
      */
     public function index()
     {
-        $notifications = Notification::with(['sender', 'recipient', 'residence'])->get();
-        return response()->json($notifications);
+       $notifications = Notification::orderBy('created_at', 'desc')->get();
+       return Inertia::render('Student_Dashboard/Notifications', ['notifications' => $notifications]);
     }
 
     /**
