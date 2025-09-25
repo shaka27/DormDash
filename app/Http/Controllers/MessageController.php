@@ -12,4 +12,6 @@ class MessageController extends Controller
 
         return inertia('Student_Dashboard/Messages', ['groups' => $groups]);
     }
+
+    // TODO: Add CRUD methods for votes and message options
 }

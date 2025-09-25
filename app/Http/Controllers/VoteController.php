@@ -17,4 +17,6 @@ class VoteController extends Controller
         $vote = Vote::with('options', 'responses')->findOrFail($voteId);
         return inertia('Student_Dashboard/VotingDetails', ['vote' => $vote]);
     }
+
+    // TODO: Add CRUD methods for votes and options
 }
