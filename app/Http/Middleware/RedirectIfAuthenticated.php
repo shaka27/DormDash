@@ -12,7 +12,7 @@ class RedirectIfAuthenticated
     {
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect('/StudentDashboard'); // 👈 send logged-in users to dashboard
+                return redirect('/StudentDashboard'); //  send logged-in users to dashboard
             }
         }
 

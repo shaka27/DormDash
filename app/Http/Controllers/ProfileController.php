@@ -13,6 +13,12 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+
+    public function index(Request $request)
+    {
+        return Inertia::render('Student_Dashboard/Profile', ['user' => Auth::user()]);
+    }
+
     /**
      * Display the user's profile form.
      */
