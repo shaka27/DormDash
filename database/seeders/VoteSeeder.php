@@ -13,6 +13,6 @@ class VoteSeeder extends Seeder
      */
     public function run(): void
     {
-        Vote::factory(10)->create();
+        Vote::factory(50)->create();
     }
 }

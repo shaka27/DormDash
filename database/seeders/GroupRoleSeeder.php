@@ -13,6 +13,6 @@ class GroupRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        GroupRole::factory(10)->create();
+        GroupRole::factory(50)->create();
     }
 }
