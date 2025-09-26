@@ -8,7 +8,7 @@ module.exports = {
     "./resources/**/*.tsx",
     "./resources/**/*.vue",
     "./storage/framework/views/*.php",
-    "./public/index.html",
+    
   ],
   theme: {
     extend: {},

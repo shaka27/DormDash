@@ -58,6 +58,9 @@ export default function New_Login() {
               Sign In
             </button>
           </form>
+          <button onClick={() => window.location.href = '/StudentDashboard'}>
+  Go to Dashboard (TEMP)
+</button>
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Don’t have an account?{" "}
