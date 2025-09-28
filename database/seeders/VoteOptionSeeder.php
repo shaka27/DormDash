@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\VoteOption;
 
 class VoteOptionSeeder extends Seeder
 {
@@ -12,6 +13,6 @@ class VoteOptionSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        VoteOption::factory(50)->create();
     }
 }
