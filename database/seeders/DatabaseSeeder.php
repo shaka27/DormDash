@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
             BedSeeder::class,
             NotificationSeeder::class,
             MessageSeeder::class,
-            GroupMembersSeeder::class,
+            GroupMemberSeeder::class,
             GroupSeeder::class,
             VoteResponseSeeder::class,
             VoteOptionSeeder::class,
