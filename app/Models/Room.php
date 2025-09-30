@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Room extends Model
 {
+    use HasFactory;
      // Explicitly define the table name
     protected $table = 'room';
     

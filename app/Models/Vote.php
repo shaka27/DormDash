@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Vote extends Model
 {
+    use HasFactory;
+    
+    protected $table = 'vote';
+
     protected $fillable = ['title', 'description', 'start_date', 'end_date']; // Match migration columns
 
     public function options()

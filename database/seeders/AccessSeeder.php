@@ -4,15 +4,14 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\GroupMember;
 
-class GroupMembersSeeder extends Seeder
+class AccessSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        GroupMember::factory(50)->create();
+        Access::factory(100)->create();
     }
 }

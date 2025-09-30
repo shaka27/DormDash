@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Residence;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Room>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Access>
  */
-class RoomFactory extends Factory
+class AccessFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -18,8 +18,7 @@ class RoomFactory extends Factory
     public function definition(): array
     {
         return [
-            'number'=>fake()->numberBetween(1, 200),
-            'status'=>fake()->randomLetter(),
+            'student_number'=>fake()->unique()->numerify('2########'),
             'residence_id'=>\App\Models\Residence::inRandomOrder()->first()->id,
         ];
     }
