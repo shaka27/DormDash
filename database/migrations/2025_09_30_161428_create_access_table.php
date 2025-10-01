@@ -14,8 +14,10 @@ return new class extends Migration
         Schema::create('access', function (Blueprint $table) {
             $table->id();
             $table->string('student_number')->unique();
-            $table->foreignId('residence_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('residence_id');
             $table->timestamps();
+
+            $table->foreign('residence_id')->references('id')->on('residence')->onDelete('cascade');
         });
     }
 
