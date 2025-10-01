@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
                         'name' => $request->user()->name,   // full name accessor
                         'email' => $request->user()->email,
                         'is_admin' => $request->user()->roles()->where('description', 'Admin')->exists(),
+                        'roles' => $request->user()->roles,
                     ]
                     : null,
             ],

@@ -1,15 +1,16 @@
 // resources/js/Pages/StudentLayout.jsx
 import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { 
-  Home, 
-  DoorClosed, 
-  Calendar, 
-  Vote, 
-  Bell, 
-  MessageSquare, 
-  User ,
-  Hotel
+import {
+  Home,
+  DoorClosed,
+  Calendar,
+  Vote,
+  Bell,
+  MessageSquare,
+  User,
+  Hotel,
+  Settings
 } from "lucide-react";
 
 export default function StudentLayout({ children }) {
@@ -19,6 +20,10 @@ export default function StudentLayout({ children }) {
 
   const { url } = usePage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Check if user has management access
+  const userRoles = auth.user?.roles?.map(role => role.description) || [];
+  const hasManagementAccess = ['Admin', 'HouseParent', 'HouseCommittee'].some(role => userRoles.includes(role));
 
   const navigation = [
     {
@@ -62,7 +67,13 @@ export default function StudentLayout({ children }) {
       href: '/profile',
       icon: User,
       current: url.startsWith('/profile')
-    }
+    },
+    ...(hasManagementAccess ? [{
+      name: 'Residence Management',
+      href: '/residence-management',
+      icon: Settings,
+      current: url.startsWith('/residence-management')
+    }] : [])
   ];
 
   return (
