@@ -46,6 +46,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
         Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
         Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+        Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     });
 });
 

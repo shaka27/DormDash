@@ -66,7 +66,7 @@ export default function Events({ events }) {
                             {/* Details Button */}
                             <div className="flex flex-col space-y-2 ml-4">
                                 <Link
-                                    href={`/EventDetails/${index}`} // Pass the index to the details page
+                                    href={`/events/${event.id}/event-details`}
                                     className="px-4 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-purple-300 transition-colors text-center"
                                 >
                                     Details

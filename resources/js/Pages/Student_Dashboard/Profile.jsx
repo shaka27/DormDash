@@ -1,6 +1,6 @@
 // resources/js/Pages/Profile.jsx
 import React from "react";
-import { Head } from "@inertiajs/react";
+import { Head, Link, router } from "@inertiajs/react";
 import StudentLayout from "./StudentLayout";
 
 export default function Profile({ resident }) {
@@ -43,13 +43,16 @@ export default function Profile({ resident }) {
                         <p className="text-gray-600">{profileData.residence} • Room {profileData.roomNumber}</p>
                     </div>
                     <div className="flex space-x-3">
-                    <a href="/EditProfile">
-                        <button className="px-4 py-2 border border-gray-300 bg-indigo-100 text-gray-700 rounded hover:bg-indigo-400 transition-colors">
-                            Edit Profile
-                        </button>
-                        </a>
+                        <Link href="/profile/edit">
+                            <button className="px-4 py-2 border border-gray-300 bg-indigo-100 text-gray-700 rounded hover:bg-indigo-400 transition-colors">
+                                Edit Profile
+                            </button>
+                        </Link>
 
-                        <button className="px-4 py-2 border border-gray-300 bg-red-100 text-black rounded hover:bg-red-400 transition-colors">
+                        <button
+                            onClick={() => router.post('/logout')}
+                            className="px-4 py-2 border border-gray-300 bg-red-100 text-black rounded hover:bg-red-400 transition-colors"
+                        >
                             Log Out
                         </button>
                     </div>

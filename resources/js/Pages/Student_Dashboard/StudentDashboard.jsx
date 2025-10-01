@@ -77,7 +77,7 @@ export default function StudentDashboard() {
                         </div>
                         <div className="px-6 pb-6">
                             <Link
-                                href="/Events"
+                                href="/events"
                                 className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
                             >
                                 View all events →
@@ -113,7 +113,7 @@ export default function StudentDashboard() {
                         </div>
                         <div className="px-6 pb-6">
                             <Link
-                                href="/Notifications"
+                                href="/notifications"
                                 className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
                             >
                                 View all announcements →
@@ -127,19 +127,19 @@ export default function StudentDashboard() {
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <QuickActionButton
-                            href="/RoomDetails"
+                            href="/rooms"
                             icon="🏠"
                             title="My Room"
                             description="View room info"
                         />
                         <QuickActionButton
-                            href="/VotingCentre"
+                            href="/voting-centre"
                             icon="🗳️"
                             title="Vote"
                             description="Cast your vote"
                         />
                         <QuickActionButton
-                            href="/Events"
+                            href="/events"
                             icon="📅"
                             title="Events"
                             description="Browse events"

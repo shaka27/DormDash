@@ -6,6 +6,7 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Models\Residence;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class NotificationController extends Controller
 {
