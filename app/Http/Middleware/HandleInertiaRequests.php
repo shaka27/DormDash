@@ -43,9 +43,12 @@ class HandleInertiaRequests extends Middleware
                         'id' => $request->user()->id,
                         'name' => $request->user()->name,   // full name accessor
                         'email' => $request->user()->email,
+                        'is_admin' => $request->user()->roles()->where('description', 'Admin')->exists(),
                     ]
                     : null,
             ],
+            // Share selected residence ID
+            'selectedResidenceId' => fn () => $request->session()->get('selected_residence_id'),
         ]);
 
     }

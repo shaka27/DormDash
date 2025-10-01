@@ -29,39 +29,39 @@ export default function StudentLayout({ children }) {
     },
     {
       name: 'Rooms',
-      href: '/RoomDetails',
+      href: '/rooms',
       icon: DoorClosed,
-      current: url.startsWith('/RoomDetails')
+      current: url.startsWith('/rooms')
     },
     {
       name: 'Events',
-      href: '/Events',
+      href: '/events',
       icon: Calendar,
-      current: url.startsWith('/Events')
+      current: url.startsWith('/events')
     },
     {
       name: 'Voting',
-      href: '/VotingCentre',
+      href: '/voting-centre',
       icon: Vote,
-      current: url.startsWith('/VotingCentre')
+      current: url.startsWith('/voting-centre')
     },
     {
       name: 'Notifications',
-      href: '/Notifications',
+      href: '/notifications',
       icon: Bell,
-      current: url.startsWith('/Notifications')
+      current: url.startsWith('/notifications')
     },
     {
       name: 'Messages',
-      href: '/Messages',
+      href: '/messages',
       icon: MessageSquare,
-      current: url.startsWith('/Messages')
+      current: url.startsWith('/messages')
     },
     {
       name: 'Profile',
-      href: '/Profile',
+      href: '/profile',
       icon: User,
-      current: url.startsWith('/Profile')
+      current: url.startsWith('/profile')
     }
   ];
 
@@ -115,7 +115,7 @@ export default function StudentLayout({ children }) {
             </div>
           </div>
           <Link
-            href="/Profile"
+            href="/profile"
             className="btn btn-outline-secondary btn-sm w-100 mt-2"
           >
             View Profile
@@ -138,19 +138,19 @@ export default function StudentLayout({ children }) {
               <h5 className="mb-0">Dashboard</h5>
             </div>
             <Link
-                href="/Notifications"
+                href="/notifications"
                 className="btn btn-notification position-relative me-2"
                 >
                 <Bell size={18} className="me-1" />
                 Notifications
-                <span                       
-                    
+                <span
+
                     className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                     style={{ fontSize: "0.5rem" }}
                     >
                     3
                 </span>
-                
+
             </Link>
                    
             </div>

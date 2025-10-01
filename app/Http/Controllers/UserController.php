@@ -3,7 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\Access;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
@@ -17,20 +21,59 @@ class UserController extends Controller
         return response()->json(User::all());
     }
 
-    // Create a new user
+    // Show registration form
+    public function create()
+    {
+        return inertia('auth/New_Register');
+    }
+
+    // Create a new user (registration)
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:8',
+            'first_name'            => 'required|string|max:255',
+            'last_name'             => 'required|string|max:255',
+            'email'                 => 'required|string|email|max:255|unique:users',
+            'contact_number'        => 'required|string|max:20',
+            'gender'                => 'required|string|in:male,female,other,prefer_not_to_say',
+            'student_number'        => 'required|string|max:255',
+            'password'              => 'required|string|min:8|confirmed',
         ]);
 
-        // Always hash passwords
-        $validated['password'] = bcrypt($validated['password']);
+        // Check if student_number exists in access table
+        $access = Access::where('student_number', $validated['student_number'])->first();
 
-        $user = User::create($validated);
-        return response()->json($user, 201);
+        if (!$access) {
+            throw ValidationException::withMessages([
+                'student_number' => 'This student number is not authorized to register.',
+            ]);
+        }
+
+        // Check if student number is already registered
+        $existingUser = User::where('student_number', $validated['student_number'])->first();
+        if ($existingUser) {
+            throw ValidationException::withMessages([
+                'student_number' => 'This student number has already been registered.',
+            ]);
+        }
+
+        // Create user with residence from access table
+        $user = User::create([
+            'first_name'      => $validated['first_name'],
+            'last_name'       => $validated['last_name'],
+            'email'           => $validated['email'],
+            'contact_number'  => $validated['contact_number'],
+            'gender'          => $validated['gender'],
+            'student_number'  => $validated['student_number'],
+            'password'        => Hash::make($validated['password']),
+            'residence_id'    => $access->residence_id,
+        ]);
+
+        // Log the user in
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect('/StudentDashboard');
     }
 
     // Show a specific user

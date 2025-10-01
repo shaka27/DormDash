@@ -24,21 +24,29 @@ Route::get('/register', fn () => Inertia::render('auth/New_Register'))->name('re
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
-    // TODO: Associate all routes with a specific residence
+    // Logout route
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Student Dashboard – pass the authenticated user to the page
-    Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
+    // Residence selection for admins (no middleware required)
+    Route::get('/residence-overview', [App\Http\Controllers\ResidenceController::class, 'overview'])->name('residence.overview');
+    Route::post('/residence/select', [App\Http\Controllers\ResidenceController::class, 'select'])->name('residence.select');
 
-    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index');
-    Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
-    Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
-    Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');
-    Route::get('/voting-centre/{vote}/voting-details', [App\Http\Controllers\VoteController::class, 'getVotingDetailsPage'])->name('voting-centre.details');
-    Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
-    Route::get('/events/{event}/event-details', [App\Http\Controllers\EventController::class, 'getEventDetailsPage'])->name('events.details');
-    Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
-    Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
-    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    // All residence-specific routes - require residence to be selected for admins
+    Route::middleware('residence.selected')->group(function () {
+        // Student Dashboard – pass the authenticated user to the page
+        Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
+
+        Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index');
+        Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
+        Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');
+        Route::get('/voting-centre/{vote}/voting-details', [App\Http\Controllers\VoteController::class, 'getVotingDetailsPage'])->name('voting-centre.details');
+        Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+        Route::get('/events/{event}/event-details', [App\Http\Controllers\EventController::class, 'getEventDetailsPage'])->name('events.details');
+        Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
+        Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
+        Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+    });
 });
 
 

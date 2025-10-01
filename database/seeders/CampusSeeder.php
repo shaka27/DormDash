@@ -13,6 +13,9 @@ class CampusSeeder extends Seeder
      */
     public function run(): void
     {
-        Campus::factory(50)->create();
+        Campus::firstOrCreate(
+            ['name' => 'Potchefstroom Campus'],
+            ['name' => 'Potchefstroom Campus']
+        );
     }
 }

@@ -24,6 +24,15 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+
+            // Check if user has Admin role
+            $user = Auth::user();
+            $isAdmin = $user->roles()->where('description', 'Admin')->exists();
+
+            if ($isAdmin) {
+                return redirect('/residence-overview');
+            }
+
             return redirect()->intended('/StudentDashboard');
         }
 

@@ -11,7 +11,7 @@ class Access extends Model
 
     protected $table = 'access';
 
-    protected $fillable = ['student_number', 'residence_id'];
+    protected $fillable = ['student_number', 'residence_id', 'role'];
 
     public function residence()
     {

@@ -15,11 +15,12 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $this->call([
+            RoleSeeder::class,
+            CampusSeeder::class,
+            ResidenceSeeder::class,
+            AdminUserSeeder::class,
             UserSeeder::class,
             EventSeeder::class,
-            RoleSeeder::class,
-            ResidenceSeeder::class,
-            CampusSeeder::class,
             RoomSeeder::class,
             BedSeeder::class,
             NotificationSeeder::class,

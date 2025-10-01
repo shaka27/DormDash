@@ -1,19 +1,24 @@
-import React, { ChangeEvent, FormEvent, useState } from "react";
-import { Head, usePage } from "@inertiajs/react";
-import { Inertia } from "@inertiajs/inertia";
+import React, { ChangeEvent, FormEvent } from "react";
+import { Head, useForm } from "@inertiajs/react";
+
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
 
 export default function New_Login() {
-  const [values, setValues] = useState({ email: "", password: "" });
-
-  const { errors } = usePage().props as { errors: Record<string, string> };
+  const { data, setData, post, processing, errors } = useForm<LoginFormValues>({
+    email: "",
+    password: "",
+  });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setValues({ ...values, [e.target.name]: e.target.value });
+    setData(e.target.name as keyof LoginFormValues, e.target.value);
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    Inertia.post("/login", values);
+    post("/login");
   };
 
   return (
@@ -30,7 +35,7 @@ export default function New_Login() {
               <input
                 type="email"
                 name="email"
-                value={values.email}
+                value={data.email}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="you@example.com"
@@ -43,7 +48,7 @@ export default function New_Login() {
               <input
                 type="password"
                 name="password"
-                value={values.password}
+                value={data.password}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="••••••••"
@@ -53,14 +58,12 @@ export default function New_Login() {
 
             <button
               type="submit"
-              className="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+              disabled={processing}
+              className="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign In
+              {processing ? "Signing in..." : "Sign In"}
             </button>
           </form>
-          <button onClick={() => window.location.href = '/StudentDashboard'}>
-  Go to Dashboard (TEMP)
-</button>
 
           <p className="mt-6 text-center text-sm text-gray-500">
             Don’t have an account?{" "}

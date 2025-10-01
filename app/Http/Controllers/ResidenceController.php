@@ -5,9 +5,35 @@ namespace App\Http\Controllers;
 use App\Models\Residence;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 
 class ResidenceController extends Controller
 {
+    /**
+     * Display residence overview page for admin to select residence
+     */
+    public function overview()
+    {
+        $residences = Residence::all();
+        return Inertia::render('Admin/ResidenceOverview', [
+            'residences' => $residences
+        ]);
+    }
+
+    /**
+     * Select a residence and store in session
+     */
+    public function select(Request $request)
+    {
+        $request->validate([
+            'residence_id' => 'required|exists:residence,id',
+        ]);
+
+        $request->session()->put('selected_residence_id', $request->residence_id);
+
+        return redirect('/StudentDashboard');
+    }
+
     /**
      * Display a listing of the resource.
      */

@@ -3,6 +3,7 @@
 
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\EnsureResidenceSelected;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -33,6 +34,11 @@ return Application::configure(basePath: dirname(__DIR__))
         //CORS for API routes
         $middleware->api(append: [
             \Illuminate\Http\Middleware\HandleCors::class,
+        ]);
+
+        // Register alias for residence middleware
+        $middleware->alias([
+            'residence.selected' => EnsureResidenceSelected::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
