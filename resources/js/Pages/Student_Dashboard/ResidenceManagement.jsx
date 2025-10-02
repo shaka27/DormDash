@@ -102,11 +102,11 @@ export default function ResidenceManagement({ residence, users, accessList, role
     };
 
     useEffect(() => {
-        if (flash.importResults) {
+        if (flash?.importResults) {
             setImportResults(flash.importResults);
             setShowResultsDialog(true);
         }
-    }, [flash.importResults]);
+    }, [flash?.importResults]);
 
     return (
         <StudentLayout>
