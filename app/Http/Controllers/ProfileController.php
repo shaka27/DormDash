@@ -16,7 +16,19 @@ class ProfileController extends Controller
 
     public function index(Request $request)
     {
-        return Inertia::render('Student_Dashboard/Profile', ['user' => Auth::user()]);
+        $user = Auth::user();
+        $user->load([
+            'residence',
+            'room',
+            'roles',
+            'maintenanceRequests' => function ($query) {
+                $query->latest('reported_at')->limit(5);
+            }
+        ]);
+
+        return Inertia::render('Student_Dashboard/Profile', [
+            'user' => $user,
+        ]);
     }
 
     /**
@@ -24,9 +36,12 @@ class ProfileController extends Controller
      */
     public function edit(Request $request): Response
     {
+        $user = Auth::user();
+        $user->load(['residence', 'room', 'roles']);
+
         return Inertia::render('Student_Dashboard/EditProfile', [
-            'user' => $request->user(),
-            'mustVerifyEmail' => $request->user() instanceof MustVerifyEmail,
+            'user' => $user,
+            'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => session('status'),
         ]);
     }
@@ -36,15 +51,18 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
+        $validated = $request->validated();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        $user->fill($validated);
+
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        $user->save();
 
-        return Redirect::route('profile.edit');
+        return Redirect::route('profile.index')->with('success', 'Profile updated successfully!');
     }
 
     /**

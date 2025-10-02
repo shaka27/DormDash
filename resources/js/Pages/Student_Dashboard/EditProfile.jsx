@@ -5,27 +5,25 @@ import StudentLayout from "./StudentLayout";
 
 export default function EditProfile({ user }) {
     const [showPasswordForm, setShowPasswordForm] = useState(false);
-    const [profileImage, setProfileImage] = useState(null);
-    const [previewImage, setPreviewImage] = useState(null);
 
-    // Form data with default values
-    const { data, setData, put, processing, errors, reset } = useForm({
-        first_name: user?.first_name || 'John',
-        last_name: user?.last_name || 'Doe',
-        email: user?.email || 'john.doe@student.university.ac.za',
-        phone: user?.phone || '+27 82 123 4567',
-        student_number: user?.student_number || 'ST2024001',
-        course: user?.course || 'Computer Science',
-        year_of_study: user?.year_of_study || '2nd Year',
-        residence: user?.residence || 'Mandela Hall',
-        room_number: user?.room_number || 'A204',
-        emergency_contact_name: user?.emergency_contact_name || 'Jane Doe',
-        emergency_contact_phone: user?.emergency_contact_phone || '+27 82 987 6543',
-        emergency_contact_relationship: user?.emergency_contact_relationship || 'Mother',
-        date_of_birth: user?.date_of_birth || '2002-03-15',
-        gender: user?.gender || 'male',
-        nationality: user?.nationality || 'South African',
-        home_address: user?.home_address || '123 Main Street, Cape Town, 8001'
+    const formatDateForInput = (date) => {
+        if (!date) return '';
+        return new Date(date).toISOString().split('T')[0];
+    };
+
+    // Form data with default values from user prop
+    const { data, setData, patch, processing, errors, reset } = useForm({
+        first_name: user?.first_name || '',
+        last_name: user?.last_name || '',
+        email: user?.email || '',
+        contact_num: user?.contact_num || '',
+        student_number: user?.student_number || '',
+        gender: user?.gender || '',
+        move_in_date: formatDateForInput(user?.move_in_date),
+        expected_move_out: formatDateForInput(user?.expected_move_out),
+        emergency_contact_name: user?.emergency_contact_name || '',
+        emergency_contact_phone: user?.emergency_contact_phone || '',
+        emergency_contact_relation: user?.emergency_contact_relation || '',
     });
 
     // Password change form
@@ -37,11 +35,11 @@ export default function EditProfile({ user }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        put(route('profile.update'), {
+        patch(route('profile.update'), {
             onSuccess: () => {
-                // Handle success - maybe show a toast notification
-                console.log('Profile updated successfully');
-            }
+                // Profile updated successfully, redirect is handled by controller
+            },
+            preserveScroll: true,
         });
     };
 
@@ -54,18 +52,6 @@ export default function EditProfile({ user }) {
                 console.log('Password updated successfully');
             }
         });
-    };
-
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setProfileImage(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreviewImage(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
     };
 
     const getInitials = (firstName, lastName) => {
@@ -83,8 +69,8 @@ export default function EditProfile({ user }) {
                         <h1 className="text-2xl font-bold text-gray-900">Edit Profile</h1>
                         <p className="text-gray-600">Update your personal information and preferences</p>
                     </div>
-                    <Link 
-                        href="/Profile" 
+                    <Link
+                        href={route('profile.index')}
                         className="flex items-center space-x-2 text-gray-600 hover:text-purple-600 transition-colors"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -103,22 +89,9 @@ export default function EditProfile({ user }) {
                         
                         <div className="flex flex-col items-center">
                             <div className="w-32 h-32 rounded-full bg-purple-100 flex items-center justify-center text-3xl font-bold text-purple-600 mb-4 overflow-hidden">
-                                {previewImage ? (
-                                    <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
-                                ) : (
-                                    getInitials(data.first_name, data.last_name)
-                                )}
+                                {getInitials(data.first_name, data.last_name)}
                             </div>
-                            
-                        
-                            
-                            <label
-                                htmlFor="profile-image"
-                                className="cursor-pointer px-4 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-purple-300 transition-colors mb-2"
-                            >
-                            </label>
-                            
-                        
+                            <p className="text-sm text-gray-500 text-center">Profile pictures coming soon</p>
                         </div>
                     </div>
 
@@ -182,18 +155,6 @@ export default function EditProfile({ user }) {
                                 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Date of Birth
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={data.date_of_birth}
-                                        onChange={e => setData('date_of_birth', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Gender
                                     </label>
                                     <select
@@ -207,21 +168,8 @@ export default function EditProfile({ user }) {
                                         <option value="other">Other</option>
                                         <option value="prefer_not_to_say">Prefer not to say</option>
                                     </select>
+                                    {errors.gender && <p className="text-red-500 text-sm mt-1">{errors.gender}</p>}
                                 </div>
-                                
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nationality
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.nationality}
-                                        onChange={e => setData('nationality', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    />
-                                </div>
-                                
-                            
                             </div>
                         </div>
 
@@ -250,30 +198,19 @@ export default function EditProfile({ user }) {
                                     </label>
                                     <input
                                         type="tel"
-                                        value={data.phone}
-                                        onChange={e => setData('phone', e.target.value)}
+                                        value={data.contact_num}
+                                        onChange={e => setData('contact_num', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     />
-                                </div>
-                                
-                                <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Home Address
-                                    </label>
-                                    <textarea
-                                        value={data.home_address}
-                                        onChange={e => setData('home_address', e.target.value)}
-                                        rows="2"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    />
+                                    {errors.contact_num && <p className="text-red-500 text-sm mt-1">{errors.contact_num}</p>}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Academic Information */}
+                        {/* Residence Information */}
                         <div className="bg-white rounded shadow-sm p-6">
-                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Academic Information</h2>
-                            
+                            <h2 className="text-lg font-semibold text-gray-900 mb-4">Residence Information</h2>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -282,68 +219,62 @@ export default function EditProfile({ user }) {
                                     <input
                                         type="text"
                                         value={data.student_number}
-                                        onChange={e => setData('student_number', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                                         readOnly
                                     />
                                     <p className="text-xs text-gray-500 mt-1">Student number cannot be changed</p>
                                 </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Course/Degree
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={data.course}
-                                        onChange={e => setData('course', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    />
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Year of Study
-                                    </label>
-                                    <select
-                                        value={data.year_of_study}
-                                        onChange={e => setData('year_of_study', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                    >
-                                        <option value="1st Year">1st Year</option>
-                                        <option value="2nd Year">2nd Year</option>
-                                        <option value="3rd Year">3rd Year</option>
-                                        <option value="4th Year">4th Year</option>
-                                        <option value="Postgraduate">Postgraduate</option>
-                                    </select>
-                                </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Residence
                                     </label>
                                     <input
                                         type="text"
-                                        value={data.residence}
-                                        onChange={e => setData('residence', e.target.value)}
+                                        value={user?.residence?.name || 'Not assigned'}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                                         readOnly
                                     />
                                     <p className="text-xs text-gray-500 mt-1">Contact management to change residence</p>
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Room Number
                                     </label>
                                     <input
                                         type="text"
-                                        value={data.room_number}
-                                        onChange={e => setData('room_number', e.target.value)}
+                                        value={user?.room?.number || 'Not assigned'}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50"
                                         readOnly
                                     />
                                     <p className="text-xs text-gray-500 mt-1">Contact management to change room</p>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Move-in Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={data.move_in_date}
+                                        onChange={e => setData('move_in_date', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    />
+                                    {errors.move_in_date && <p className="text-red-500 text-sm mt-1">{errors.move_in_date}</p>}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Expected Move-out Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={data.expected_move_out}
+                                        onChange={e => setData('expected_move_out', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    />
+                                    {errors.expected_move_out && <p className="text-red-500 text-sm mt-1">{errors.expected_move_out}</p>}
                                 </div>
                             </div>
                         </div>
@@ -363,8 +294,9 @@ export default function EditProfile({ user }) {
                                         onChange={e => setData('emergency_contact_name', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     />
+                                    {errors.emergency_contact_name && <p className="text-red-500 text-sm mt-1">{errors.emergency_contact_name}</p>}
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Phone Number
@@ -375,6 +307,7 @@ export default function EditProfile({ user }) {
                                         onChange={e => setData('emergency_contact_phone', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     />
+                                    {errors.emergency_contact_phone && <p className="text-red-500 text-sm mt-1">{errors.emergency_contact_phone}</p>}
                                 </div>
                                 
                                 <div>
@@ -382,10 +315,11 @@ export default function EditProfile({ user }) {
                                         Relationship
                                     </label>
                                     <select
-                                        value={data.emergency_contact_relationship}
-                                        onChange={e => setData('emergency_contact_relationship', e.target.value)}
+                                        value={data.emergency_contact_relation}
+                                        onChange={e => setData('emergency_contact_relation', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     >
+                                        <option value="">Select Relationship</option>
                                         <option value="Parent">Parent</option>
                                         <option value="Mother">Mother</option>
                                         <option value="Father">Father</option>
@@ -394,6 +328,7 @@ export default function EditProfile({ user }) {
                                         <option value="Spouse">Spouse</option>
                                         <option value="Other">Other</option>
                                     </select>
+                                    {errors.emergency_contact_relation && <p className="text-red-500 text-sm mt-1">{errors.emergency_contact_relation}</p>}
                                 </div>
                             </div>
                         </div>
@@ -406,7 +341,7 @@ export default function EditProfile({ user }) {
                                 </div>
                                 <div className="flex space-x-3">
                                     <Link
-                                        href="/Profile"
+                                        href={route('profile.index')}
                                         className="px-6 py-3 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
                                     >
                                         Cancel
