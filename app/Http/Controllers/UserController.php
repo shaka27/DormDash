@@ -34,7 +34,7 @@ class UserController extends Controller
             'first_name'            => 'required|string|max:255',
             'last_name'             => 'required|string|max:255',
             'email'                 => 'required|string|email|max:255|unique:users',
-            'contact_number'        => 'required|string|max:20',
+            'contact_num'        => 'required|string|max:20',
             'gender'                => 'required|string|in:male,female,other,prefer_not_to_say',
             'student_number'        => 'required|string|max:255',
             'password'              => 'required|string|min:8|confirmed',
@@ -62,12 +62,17 @@ class UserController extends Controller
             'first_name'      => $validated['first_name'],
             'last_name'       => $validated['last_name'],
             'email'           => $validated['email'],
-            'contact_number'  => $validated['contact_number'],
+            'contact_num'  => $validated['contact_num'],
             'gender'          => $validated['gender'],
             'student_number'  => $validated['student_number'],
             'password'        => Hash::make($validated['password']),
             'residence_id'    => $access->residence_id,
         ]);
+
+        $role = \App\Models\Role::where('description', $access->role)->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
 
         // Log the user in
         Auth::login($user);

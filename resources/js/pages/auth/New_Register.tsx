@@ -5,7 +5,7 @@ interface RegisterFormValues {
   first_name: string;
   last_name: string;
   email: string;
-  contact_number: string;
+  contact_num: string;
   gender: string;
   student_number: string;
   password: string;
@@ -17,7 +17,7 @@ export default function New_Register() {
     first_name: "",
     last_name: "",
     email: "",
-    contact_number: "",
+    contact_num: "",
     gender: "",
     student_number: "",
     password: "",
@@ -103,14 +103,14 @@ export default function New_Register() {
               </label>
               <input
                 type="tel"
-                name="contact_number"
-                value={data.contact_number}
+                name="contact_num"
+                value={data.contact_num}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="+27 12 345 6789"
               />
-              {errors.contact_number && (
-                <p className="mt-1 text-sm text-red-600">{errors.contact_number}</p>
+              {errors.contact_num && (
+                <p className="mt-1 text-sm text-red-600">{errors.contact_num}</p>
               )}
             </div>
             <div className="grid grid-cols-2 gap-4">

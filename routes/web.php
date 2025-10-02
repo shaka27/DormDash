@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
@@ -21,6 +22,8 @@ Route::get('/', function () {
 Route::get('/login', fn () => Inertia::render('auth/New_Login'))->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', fn () => Inertia::render('auth/New_Register'))->name('register');
+Route::post('/register', [UserController::class, 'store']);
+
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
@@ -39,6 +42,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index');
         Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
         Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');
+        Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'update'])->name('notifications.update');
+        Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
         Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');
         Route::get('/voting-centre/{vote}/voting-details', [App\Http\Controllers\VoteController::class, 'getVotingDetailsPage'])->name('voting-centre.details');
         Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');

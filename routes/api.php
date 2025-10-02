@@ -20,7 +20,8 @@ use App\Http\Controllers\UserController;
 Route::post('/login', [AuthController::class, 'login']);
 
 // Protected routes (require authentication)
-Route::middleware('auth:sanctum')->group(function () {
+// Using 'auth:sanctum,web' to support both API tokens and web session authentication
+Route::middleware('auth:sanctum,web')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
@@ -36,14 +37,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/rooms', [App\Http\Controllers\RoomController::class, 'store']);
     Route::get('/rooms/{id}', [App\Http\Controllers\RoomController::class, 'show']);  //Display single specific room
     Route::put('/rooms/{id}', [App\Http\Controllers\RoomController::class,  'update']);
-    Route::delete('/rooms/{id}', [App\Http\Controllers\RoomController::class, 'destroy']);  
+    Route::delete('/rooms/{id}', [App\Http\Controllers\RoomController::class, 'destroy']);
 
     //NOTIFICATION protected routes here
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
     Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store']);
     Route::get('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'show']);  //Display single specific notification
     Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class,  'update']);
-    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);  
+    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);
 
 
 
