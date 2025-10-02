@@ -11,10 +11,15 @@ class VoteOption extends Model
 {
     use HasFactory;
 
-    protected $table = 'vote_option'; 
-    protected $fillable = ['user_id'];
+    protected $table = 'vote_option';
+    protected $fillable = ['vote_id', 'option_text', 'user_id'];
 
     // Relationships
+    public function vote(): BelongsTo
+    {
+        return $this->belongsTo(Vote::class);
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -22,6 +27,6 @@ class VoteOption extends Model
 
     public function responses(): HasMany
     {
-        return $this->hasMany(VoteResponse::class, 'option_id');
+        return $this->hasMany(VoteResponse::class, 'vote_option_id');
     }
 }

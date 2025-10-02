@@ -12,7 +12,22 @@ class Vote extends Model
     
     protected $table = 'vote';
 
-    protected $fillable = ['title', 'description', 'start_date', 'end_date']; // Match migration columns
+    protected $fillable = ['title', 'description', 'start_date', 'end_date', 'residence_id', 'user_id']; // Match migration columns
+
+    protected $casts = [
+        'start_date' => 'datetime',
+        'end_date' => 'datetime',
+    ];
+
+    public function residence()
+    {
+        return $this->belongsTo(Residence::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     public function options()
     {
