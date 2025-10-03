@@ -20,8 +20,7 @@ use App\Http\Controllers\UserController;
 Route::post('/login', [AuthController::class, 'login']);
 
 // Protected routes (require authentication)
-// Using 'auth:sanctum,web' to support both API tokens and web session authentication
-Route::middleware('auth:sanctum,web')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
@@ -37,15 +36,36 @@ Route::middleware('auth:sanctum,web')->group(function () {
     Route::post('/rooms', [App\Http\Controllers\RoomController::class, 'store']);
     Route::get('/rooms/{id}', [App\Http\Controllers\RoomController::class, 'show']);  //Display single specific room
     Route::put('/rooms/{id}', [App\Http\Controllers\RoomController::class,  'update']);
-    Route::delete('/rooms/{id}', [App\Http\Controllers\RoomController::class, 'destroy']);
+    Route::delete('/rooms/{id}', [App\Http\Controllers\RoomController::class, 'destroy']);  
 
     //NOTIFICATION protected routes here
     Route::get('/notifications', [App\Http\Controllers\NotificationController::class, 'index']);
     Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store']);
     Route::get('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'show']);  //Display single specific notification
     Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class,  'update']);
-    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);
+    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);  
 
+        // CHATROOM protected routes
+        Route::get('/chatrooms', [App\Http\Controllers\ChatroomController::class, 'index']);
+        Route::post('/chatrooms', [App\Http\Controllers\ChatroomController::class, 'store']);
+        Route::get('/chatrooms/{id}', [App\Http\Controllers\ChatroomController::class, 'show']);
+        Route::put('/chatrooms/{id}', [App\Http\Controllers\ChatroomController::class, 'update']);
+        Route::delete('/chatrooms/{id}', [App\Http\Controllers\ChatroomController::class, 'destroy']);
+
+        // MESSAGES protected routes
+        Route::get('/messages', [App\Http\Controllers\MessagesController::class, 'index']);
+        Route::post('/messages', [App\Http\Controllers\MessagesController::class, 'store']);
+        Route::get('/messages/{id}', [App\Http\Controllers\MessagesController::class, 'show']);
+        Route::put('/messages/{id}', [App\Http\Controllers\MessagesController::class, 'update']);
+        Route::delete('/messages/{id}', [App\Http\Controllers\MessagesController::class, 'destroy']);
+
+        // VOTING protected routes
+        Route::get('/votes', [App\Http\Controllers\VotingController::class, 'index']);
+        Route::post('/votes', [App\Http\Controllers\VotingController::class, 'store']);
+        Route::get('/votes/{id}', [App\Http\Controllers\VotingController::class, 'show']);
+        Route::put('/votes/{id}', [App\Http\Controllers\VotingController::class, 'update']);
+        Route::delete('/votes/{id}', [App\Http\Controllers\VotingController::class, 'destroy']);
+        Route::post('/votes/submit-response', [App\Http\Controllers\VotingController::class, 'submitResponse']);
 
 
 });
