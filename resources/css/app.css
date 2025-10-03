@@ -19,12 +19,12 @@ body {
     border-color: #6f42c1; /* purple border */
     color: #6f42c1;        /* purple text */
     transition: all 0.2s ease-in-out;
-  }
-  
-  .btn-notification:hover {
+}
+
+.btn-notification:hover {
     background-color: #6f42c1; /* purple background */
-    color: #fff;              /* white icon/text */
-  }
+    color: #fff;               /* white icon/text */
+}
   
 
 /* You can add more custom styles here */

@@ -1,18 +1,21 @@
-// resources/js/Pages/Dashboard.jsx
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import StudentLayout from './StudentLayout';
 
-export default function StudentDashboard({ user, stats }) {
+export default function StudentDashboard() {
+   
+    //  Get auth.user from Inertia shared props
+    const { auth } = usePage().props;
+
     return (
         <StudentLayout>
             <Head title="Student Dashboard" />
-            
+
             <div className="space-y-6">
                 {/* Welcome Header */}
                 <div className="bg-white rounded shadow-sm p-6">
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        Welcome back, {user?.name || 'Evan'}!
+                        Welcome back, {auth.user?.name}!
                     </h1>
                     <p className="text-gray-600">
                         Here's what's happening in your residence today.
@@ -20,15 +23,8 @@ export default function StudentDashboard({ user, stats }) {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard
-                        title="Occupancy Rate"
-                        value="94%"
-                        subtitle="326 of 347 rooms occupied"
-                        icon="📊"
-                        iconBg="bg-blue-100"
-                        iconColor="text-blue-600"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+                
                     <StatCard
                         title="Upcoming Events"
                         value="8"
@@ -37,14 +33,7 @@ export default function StudentDashboard({ user, stats }) {
                         iconBg="bg-green-100"
                         iconColor="text-green-600"
                     />
-                    <StatCard
-                        title="Active Groups"
-                        value="23"
-                        subtitle="Student committees"
-                        icon="👥"
-                        iconBg="bg-purple-100"
-                        iconColor="text-purple-600"
-                    />
+                
                     <StatCard
                         title="New Announcements"
                         value="3"
@@ -88,7 +77,7 @@ export default function StudentDashboard({ user, stats }) {
                         </div>
                         <div className="px-6 pb-6">
                             <Link
-                                href="/Events"
+                                href="/events"
                                 className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
                             >
                                 View all events →
@@ -124,7 +113,7 @@ export default function StudentDashboard({ user, stats }) {
                         </div>
                         <div className="px-6 pb-6">
                             <Link
-                                href="/Notifications"
+                                href="/notifications"
                                 className="text-sm text-indigo-600 hover:text-indigo-500 font-medium"
                             >
                                 View all announcements →
@@ -138,24 +127,23 @@ export default function StudentDashboard({ user, stats }) {
                     <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <QuickActionButton
-                            href="/RoomDetails"
+                            href="/rooms"
                             icon="🏠"
                             title="My Room"
                             description="View room info"
                         />
                         <QuickActionButton
-                            href="/VotingCentre"
+                            href="/voting-centre"
                             icon="🗳️"
                             title="Vote"
                             description="Cast your vote"
                         />
                         <QuickActionButton
-                            href="/Events"
+                            href="/events"
                             icon="📅"
                             title="Events"
                             description="Browse events"
                         />
-                    
                     </div>
                 </div>
             </div>
@@ -186,7 +174,7 @@ function EventItem({ title, time, location, priority }) {
     const priorityColors = {
         high: 'bg-red-100 text-red-800',
         medium: 'bg-purple-100 text-purple-800',
-        low: 'bg-gray-100 text-gray-800'
+        low: 'bg-gray-100 text-gray-800',
     };
 
     return (

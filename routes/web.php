@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\StaffController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,5 +27,13 @@ Route::get('/Messages', fn() => Inertia::render('Student_Dashboard/Messages'))->
 Route::get('/Profile', fn() => Inertia::render('Student_Dashboard/Profile'))->name('profile');
 Route::get('/Notifications', fn() => Inertia::render('Student_Dashboard/Notifications'))->name('notifications');
 
+
 // Staff dashboard page
-Route::get('/staff-tasks', fn () => Inertia::render('StaffTasks'));
+Route::get('/staff', function () {
+    return Inertia::render('Staff');
+});
+
+// Default redirect
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});

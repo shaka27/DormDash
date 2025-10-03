@@ -1,18 +1,16 @@
-import AppLayout from '@/layouts/app-layout';
-import { Head, Link } from '@inertiajs/react';
 import React, { useState } from 'react';
 import { 
   Users, 
- // Settings, 
+  Settings, 
   AlertTriangle, 
-  //CheckCircle, 
+  CheckCircle, 
   Clock, 
   Bell,
   Search,
   Plus,
-//  Calendar,
+  Calendar,
   Wrench,
-//  MessageSquare,
+  MessageSquare,
   BarChart3,
   Home,
   UserCheck,
@@ -29,7 +27,7 @@ type StaffRole =
 
 type TaskStatus = '' | 'yes' | 'no';
 
-const StaffTasks: React.FC = () => {
+const StaffTasks = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [searchTerm, setSearchTerm] = useState('');
   const [notifications, setNotifications] = useState(3);
@@ -65,7 +63,7 @@ const StaffTasks: React.FC = () => {
     ],
   };
 
-  // Sample data - would come from Laravel backend
+  // Sample data
   const dashboardStats = {
     totalStudents: 247,
     occupancyRate: 89,
@@ -101,68 +99,40 @@ const StaffTasks: React.FC = () => {
   };
 
   const saveTasks = () => {
-    // This would typically send data to Laravel backend
     console.log('Saving tasks:', taskStatus);
     alert('Tasks saved successfully!');
   };
 
-  const TabButton = ({ id, label, icon: Icon, isActive, onClick }: any) => (
-    <button
-      onClick={() => onClick(id)}
-      className={`flex items-center space-x-2 px-4 py-3 rounded-lg transition-all duration-200 ${
-        isActive 
-          ? 'bg-purple-600 text-white shadow-lg' 
-          : 'text-purple-600 hover:bg-purple-100 hover:text-purple-800'
-      }`}
-    >
-      <Icon size={20} />
-      <span className="font-medium">{label}</span>
-    </button>
-  );
-
-  const StatCard = ({ icon: Icon, title, value, subtitle, color = 'purple' }: any) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-gray-600 text-sm font-medium">{title}</p>
-          <p className={`text-2xl font-bold mt-1 ${
-            color === 'purple' ? 'text-purple-600' :
-            color === 'green' ? 'text-green-600' :
-            color === 'yellow' ? 'text-yellow-600' :
-            'text-red-600'
-          }`}>{value}</p>
-          {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+  // Stats Card Component (matching Student Dashboard style)
+  const StatCard = ({ title, value, subtitle, icon, iconBg, iconColor }: any) => (
+    <div className="bg-white rounded shadow-sm p-6 hover:shadow-md transition-shadow">
+      <div className="flex items-center">
+        <div className={`${iconBg} ${iconColor} p-3 rounded`}>
+          <span className="text-xl">{icon}</span>
         </div>
-        <div className={`p-3 rounded-full ${
-          color === 'purple' ? 'bg-purple-100' :
-          color === 'green' ? 'bg-green-100' :
-          color === 'yellow' ? 'bg-yellow-100' :
-          'bg-red-100'
-        }`}>
-          <Icon className={`${
-            color === 'purple' ? 'text-purple-600' :
-            color === 'green' ? 'text-green-600' :
-            color === 'yellow' ? 'text-yellow-600' :
-            'text-red-600'
-          }`} size={24} />
+        <div className="ml-4">
+          <p className="text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-2xl font-bold text-gray-900">{value}</p>
+          {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
         </div>
       </div>
     </div>
   );
 
+  // Activity Item Component (matching Student Dashboard style)
   const ActivityItem = ({ activity }: any) => {
     const statusColors = {
       completed: 'bg-green-100 text-green-800',
       urgent: 'bg-red-100 text-red-800',
       pending: 'bg-yellow-100 text-yellow-800',
-      info: 'bg-blue-100 text-blue-800'
+      info: 'bg-purple-100 text-purple-800'
     };
 
     return (
-      <div className="flex items-start space-x-3 p-4 hover:bg-gray-50 rounded-lg transition-colors">
+      <div className="flex items-start justify-between p-4 border border-gray-200 rounded hover:shadow-sm transition-shadow">
         <div className="flex-1">
-          <p className="text-gray-800 text-sm font-medium">{activity.message}</p>
-          <p className="text-gray-500 text-xs mt-1">{activity.time}</p>
+          <h3 className="text-sm font-medium text-gray-900">{activity.message}</h3>
+          <p className="text-sm text-gray-500">{activity.time}</p>
         </div>
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[activity.status as keyof typeof statusColors]}`}>
           {activity.status}
@@ -171,45 +141,113 @@ const StaffTasks: React.FC = () => {
     );
   };
 
+  // Quick Action Button Component (matching Student Dashboard style)
+  const QuickActionButton = ({ onClick, icon, title, description }: any) => (
+    <button
+      onClick={onClick}
+      className="flex flex-col items-center p-4 border border-gray-200 rounded hover:shadow-sm hover:border-purple-300 transition-all"
+    >
+      <span className="text-2xl mb-2">{icon}</span>
+      <h3 className="text-sm font-medium text-gray-900">{title}</h3>
+      <p className="text-xs text-gray-500 text-center">{description}</p>
+    </button>
+  );
+
   const renderDashboard = () => (
     <div className="space-y-6">
+      {/* Welcome Header */}
+      <div className="bg-white rounded shadow-sm p-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Staff Dashboard Overview
+        </h1>
+        <p className="text-gray-600">
+          Manage residence operations and track daily activities.
+        </p>
+      </div>
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          icon={Users} 
           title="Total Students" 
           value={dashboardStats.totalStudents}
-          color="purple"
+          subtitle="Currently residing"
+          icon="👥"
+          iconBg="bg-purple-100"
+          iconColor="text-purple-600"
         />
         <StatCard 
-          icon={Home} 
           title="Occupancy Rate" 
           value={`${dashboardStats.occupancyRate}%`}
-          color="green"
+          subtitle="Rooms occupied"
+          icon="🏠"
+          iconBg="bg-green-100"
+          iconColor="text-green-600"
         />
         <StatCard 
-          icon={Clock} 
           title="Pending Requests" 
           value={dashboardStats.pendingRequests}
-          color="yellow"
+          subtitle="Awaiting action"
+          icon="⏰"
+          iconBg="bg-yellow-100"
+          iconColor="text-yellow-600"
         />
         <StatCard 
-          icon={AlertTriangle} 
           title="Urgent Issues" 
           value={dashboardStats.urgentIssues}
-          color="red"
+          subtitle="Require immediate attention"
+          icon="⚠️"
+          iconBg="bg-red-100"
+          iconColor="text-red-600"
         />
       </div>
 
-      {/* Recent Activities */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800">Recent Activities</h3>
+      {/* Main Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Activities */}
+        <div className="bg-white rounded shadow-sm">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center">
+              <span className="text-lg mr-3">📋</span>
+              <h2 className="text-lg font-semibold text-gray-900">Recent Activities</h2>
+            </div>
+            <p className="text-sm text-gray-500 mt-1">Latest updates and maintenance tasks</p>
+          </div>
+          <div className="p-6 space-y-4">
+            {recentActivities.map(activity => (
+              <ActivityItem key={activity.id} activity={activity} />
+            ))}
+          </div>
         </div>
-        <div className="divide-y divide-gray-200">
-          {recentActivities.map(activity => (
-            <ActivityItem key={activity.id} activity={activity} />
-          ))}
+
+        {/* Quick Actions */}
+        <div className="bg-white rounded shadow-sm p-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <QuickActionButton
+              onClick={() => setActiveTab('students')}
+              icon="👥"
+              title="Students"
+              description="Manage residents"
+            />
+            <QuickActionButton
+              onClick={() => setActiveTab('maintenance')}
+              icon="🔧"
+              title="Maintenance"
+              description="Work orders"
+            />
+            <QuickActionButton
+              onClick={() => setActiveTab('tasks')}
+              icon="✅"
+              title="Daily Tasks"
+              description="Track progress"
+            />
+            <QuickActionButton
+              onClick={() => setActiveTab('reports')}
+              icon="📊"
+              title="Reports"
+              description="View analytics"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -217,15 +255,21 @@ const StaffTasks: React.FC = () => {
 
   const renderStudents = () => (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Student Management</h2>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-          <Plus size={16} />
-          <span>Add Student</span>
-        </button>
+      {/* Header */}
+      <div className="bg-white rounded shadow-sm p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Student Management</h2>
+            <p className="text-gray-600 mt-1">View and manage residence students</p>
+          </div>
+          <button className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors flex items-center space-x-2">
+            <Plus size={16} />
+            <span>Add Student</span>
+          </button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="bg-white rounded shadow-sm">
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center space-x-4">
             <div className="relative flex-1">
@@ -235,10 +279,10 @@ const StaffTasks: React.FC = () => {
                 placeholder="Search students..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
               />
             </div>
-            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded hover:bg-gray-50">
               <Filter size={16} />
               <span>Filter</span>
             </button>
@@ -275,7 +319,7 @@ const StaffTasks: React.FC = () => {
                   <td className="p-4 text-gray-600">{student.phone}</td>
                   <td className="p-4 text-gray-600">{student.checkIn}</td>
                   <td className="p-4">
-                    <button className="text-blue-600 hover:text-blue-800 font-medium">View Details</button>
+                    <button className="text-purple-600 hover:text-purple-800 font-medium">View Details</button>
                   </td>
                 </tr>
               ))}
@@ -288,15 +332,21 @@ const StaffTasks: React.FC = () => {
 
   const renderMaintenance = () => (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Maintenance & Work Orders</h2>
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-          <Plus size={16} />
-          <span>New Work Order</span>
-        </button>
+      {/* Header */}
+      <div className="bg-white rounded shadow-sm p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Maintenance & Work Orders</h2>
+            <p className="text-gray-600 mt-1">Track and manage maintenance requests</p>
+          </div>
+          <button className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors flex items-center space-x-2">
+            <Plus size={16} />
+            <span>New Work Order</span>
+          </button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="bg-white rounded shadow-sm">
         <div className="p-4 border-b border-gray-200">
           <h3 className="font-semibold text-gray-800">Active Work Orders</h3>
         </div>
@@ -329,7 +379,7 @@ const StaffTasks: React.FC = () => {
                   <td className="p-4">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                       order.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                      order.status === 'In Progress' ? 'bg-blue-100 text-blue-800' :
+                      order.status === 'In Progress' ? 'bg-purple-100 text-purple-800' :
                       'bg-gray-100 text-gray-800'
                     }`}>
                       {order.status}
@@ -337,7 +387,7 @@ const StaffTasks: React.FC = () => {
                   </td>
                   <td className="p-4 text-gray-600">{order.assignedTo}</td>
                   <td className="p-4">
-                    <button className="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                    <button className="text-purple-600 hover:text-purple-800 font-medium">Edit</button>
                   </td>
                 </tr>
               ))}
@@ -350,18 +400,24 @@ const StaffTasks: React.FC = () => {
 
   const renderTasks = () => (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold text-gray-800">Daily Tasks</h2>
-        <button 
-          onClick={saveTasks}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
-        >
-          <Save size={16} />
-          <span>Save Progress</span>
-        </button>
+      {/* Header */}
+      <div className="bg-white rounded shadow-sm p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900">Daily Tasks</h2>
+            <p className="text-gray-600 mt-1">Track your daily work progress</p>
+          </div>
+          <button 
+            onClick={saveTasks}
+            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors flex items-center space-x-2"
+          >
+            <Save size={16} />
+            <span>Save Progress</span>
+          </button>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded shadow-sm p-6">
         <div className="mb-6">
           <label htmlFor="role" className="block mb-2 font-medium text-gray-700">
             Select your staff role:
@@ -370,10 +426,10 @@ const StaffTasks: React.FC = () => {
             id="role"
             value={selectedRole}
             onChange={e => setSelectedRole(e.target.value as StaffRole)}
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+            className="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
           >
             {staffRoles.map(role => (
-              <option key={role.value} value={role.value} style={{ color: 'black' }}>
+              <option key={role.value} value={role.value}>
                 {role.label}
               </option>
             ))}
@@ -386,12 +442,12 @@ const StaffTasks: React.FC = () => {
 
         <div className="space-y-3">
           {tasksByRole[selectedRole].map((task, idx) => (
-            <div key={task} className="p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-200 flex items-center justify-between hover:bg-gray-100 transition-colors">
+            <div key={idx} className="p-4 border border-gray-200 rounded hover:shadow-sm transition-shadow flex items-center justify-between">
               <span className="text-gray-800 font-medium flex-1">{task}</span>
               <div className="ml-4 flex items-center space-x-2">
                 <label className="text-sm text-gray-600">Completed:</label>
                 <select
-                  className="p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-black"
+                  className="p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white"
                   value={taskStatus[task] ?? ''}
                   onChange={e => handleStatusChange(task, e.target.value as TaskStatus)}
                 >
@@ -405,7 +461,7 @@ const StaffTasks: React.FC = () => {
         </div>
 
         {/* Task Progress Summary */}
-        <div className="mt-6 p-4 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="mt-6 p-4 border border-purple-200 rounded bg-purple-50">
           <h4 className="font-semibold text-purple-800 mb-2">Progress Summary</h4>
           <div className="text-sm text-purple-700">
             Completed: {Object.values(taskStatus).filter(status => status === 'yes').length} / {tasksByRole[selectedRole].length} tasks
@@ -424,10 +480,18 @@ const StaffTasks: React.FC = () => {
   );
 
   const renderReports = () => (
-    <div className="text-center py-12">
-      <BarChart3 className="mx-auto text-gray-400 mb-4" size={48} />
-      <h3 className="text-lg font-medium text-gray-600">Reports Coming Soon</h3>
-      <p className="text-gray-500">Generate detailed residence reports and analytics.</p>
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded shadow-sm p-6">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Reports & Analytics</h2>
+        <p className="text-gray-600">Generate detailed residence reports and analytics</p>
+      </div>
+
+      <div className="bg-white rounded shadow-sm p-12 text-center">
+        <span className="text-6xl mb-4 block">📊</span>
+        <h3 className="text-lg font-medium text-gray-600 mb-2">Reports Coming Soon</h3>
+        <p className="text-gray-500">Generate detailed residence reports and analytics.</p>
+      </div>
     </div>
   );
 
@@ -443,20 +507,21 @@ const StaffTasks: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
+      {/* Header - matching Student Dashboard */}
       <header className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
-                <Home className="text-blue-600" size={24} />
+                <span className="text-2xl">🏠</span>
                 <h1 className="text-xl font-bold text-gray-800">DormDash</h1>
                 <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">Staff Portal</span>
               </div>
             </div>
+            
             <div className="flex items-center space-x-4">
-              <button className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg">
-                <Bell size={20} />
+              <button className="relative p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded">
+                <span className="text-xl">🔔</span>
                 {notifications > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
                     {notifications}
@@ -464,7 +529,7 @@ const StaffTasks: React.FC = () => {
                 )}
               </button>
               <div className="flex items-center space-x-2 text-gray-600">
-                <UserCheck size={20} />
+                <span className="text-xl">👤</span>
                 <span className="font-medium">Staff Name</span>
               </div>
             </div>
@@ -472,26 +537,84 @@ const StaffTasks: React.FC = () => {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex">
-        {/* Sidebar Navigation Tabs */}
-        <div className="w-56 flex-shrink-0 mr-8 flex flex-col justify-between" style={{ minHeight: '500px' }}>
-          <nav className="flex flex-col space-y-2">
-            <TabButton id="dashboard" label="Overview" icon={BarChart3} isActive={activeTab === 'dashboard'} onClick={setActiveTab} />
-            <TabButton id="students" label="Students" icon={Users} isActive={activeTab === 'students'} onClick={setActiveTab} />
-            <TabButton id="maintenance" label="Maintenance" icon={Wrench} isActive={activeTab === 'maintenance'} onClick={setActiveTab} />
-            <TabButton id="tasks" label="Daily Tasks" icon={ClipboardList} isActive={activeTab === 'tasks'} onClick={setActiveTab} />
-            <TabButton id="reports" label="Reports" icon={BarChart3} isActive={activeTab === 'reports'} onClick={setActiveTab} />
-          </nav>
-          <div className="mt-8">
-            <Link href="/dashboard" className="text-purple-600 hover:underline font-medium">
-              Go back to dashboard
-            </Link>
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex space-x-8">
+          {/* Left Sidebar Navigation */}
+          <aside className="w-64 bg-white rounded shadow-sm p-4">
+            <nav className="space-y-2">
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`flex items-center space-x-3 w-full px-4 py-3 rounded text-left transition-all duration-200 ${
+                  activeTab === 'dashboard' 
+                    ? 'bg-purple-600 text-white shadow' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                }`}
+              >
+                <BarChart3 size={20} />
+                <span className="font-medium">Dashboard</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('students')}
+                className={`flex items-center space-x-3 w-full px-4 py-3 rounded text-left transition-all duration-200 ${
+                  activeTab === 'students' 
+                    ? 'bg-purple-600 text-white shadow' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                }`}
+              >
+                <Users size={20} />
+                <span className="font-medium">Students</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('maintenance')}
+                className={`flex items-center space-x-3 w-full px-4 py-3 rounded text-left transition-all duration-200 ${
+                  activeTab === 'maintenance' 
+                    ? 'bg-purple-600 text-white shadow' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                }`}
+              >
+                <Wrench size={20} />
+                <span className="font-medium">Maintenance</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('tasks')}
+                className={`flex items-center space-x-3 w-full px-4 py-3 rounded text-left transition-all duration-200 ${
+                  activeTab === 'tasks' 
+                    ? 'bg-purple-600 text-white shadow' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                }`}
+              >
+                <ClipboardList size={20} />
+                <span className="font-medium">Daily Tasks</span>
+              </button>
+              <button
+                onClick={() => setActiveTab('reports')}
+                className={`flex items-center space-x-3 w-full px-4 py-3 rounded text-left transition-all duration-200 ${
+                  activeTab === 'reports' 
+                    ? 'bg-purple-600 text-white shadow' 
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-800'
+                }`}
+              >
+                <BarChart3 size={20} />
+                <span className="font-medium">Reports</span>
+              </button>
+            </nav>
+            
+            {/* Go back to dashboard hyperlink */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <a 
+                href="/dashboard" 
+                className="text-purple-600 hover:text-purple-800 hover:underline text-sm font-medium flex items-center space-x-2 transition-colors"
+              >
+                <Home size={16} />
+                <span>Go back to the dashboard</span>
+              </a>
+            </div>
+          </aside>
 
-        {/* Main Content */}
-        <div className="flex-1">
-          {renderContent()}
+          {/* Main Content Area */}
+          <main className="flex-1">
+            {renderContent()}
+          </main>
         </div>
       </div>
     </div>

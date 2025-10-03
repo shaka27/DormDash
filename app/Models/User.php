@@ -87,4 +87,8 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
+    public function bed()
+    {
+        return $this->hasOne(Bed::class);
+    }
 }
