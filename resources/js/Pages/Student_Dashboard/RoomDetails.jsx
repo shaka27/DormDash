@@ -39,10 +39,10 @@ export default function RoomDetails({ room })  {
                         <p className="text-gray-600">{roomData.building} • {roomData.floor}</p>
                     </div>
                     <div className="flex space-x-3">
-                        <button className="px-4 py-2 bg-indigo-600 text-black rounded hover:bg-indigo-700 transition-colors">
+                        <button className="px-4 py-2 border border-gray-300 bg-red-100 text-black rounded hover:bg-red-400 transition-colors">
                             Report Issue
                         </button>
-                        <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors">
+                        <button className="px-4 py-2 border border-gray-300 bg-green-100 text-gray-700 rounded hover:bg-green-400 transition-colors">
                             Request Transfer
                         </button>
                     </div>

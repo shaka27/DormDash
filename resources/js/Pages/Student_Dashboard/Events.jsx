@@ -1,6 +1,6 @@
 // resources/js/Pages/Events.jsx
 import React from "react";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import StudentLayout from "./StudentLayout";
 
 export default function Events({ events }) {
@@ -37,9 +37,6 @@ export default function Events({ events }) {
                         <h1 className="text-2xl font-bold text-gray-900">Upcoming Events</h1>
                         <p className="text-gray-600">Stay updated with residence activities and important dates</p>
                     </div>
-                    <button className="px-4 py-2 bg-indigo-600 text-black rounded hover:bg-indigo-700 transition-colors">
-                        Add Event
-                    </button>
                 </div>
             </div>
 
@@ -65,13 +62,15 @@ export default function Events({ events }) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Details Button */}
                             <div className="flex flex-col space-y-2 ml-4">
-                                <button className="px-4 py-2 bg-green-600 text-black rounded text-sm hover:bg-green-700 transition-colors">
-                                    RSVP
-                                </button>
-                                <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-gray-50 transition-colors">
+                                <Link
+                                    href={`/events/${event.id}/event-details`}
+                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded text-sm hover:bg-purple-300 transition-colors text-center"
+                                >
                                     Details
-                                </button>
+                                </Link>
                             </div>
                         </div>
                     </div>
@@ -89,10 +88,6 @@ export default function Events({ events }) {
                     </button>
                 </div>
             )}
-            
         </StudentLayout>
-        
     );
-
- 
 }

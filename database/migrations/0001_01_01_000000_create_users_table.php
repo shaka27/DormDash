@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('contact_num')->nullable();
             $table->string('password');
             $table->string('gender');
+            $table->string('student_number')->unique()->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

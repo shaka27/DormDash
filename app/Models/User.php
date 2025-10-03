@@ -15,6 +15,9 @@ class User extends Authenticatable
     /**
      * The attributes that are mass assignable.
      */
+
+    protected $table = 'users';
+
     protected $fillable = [
         'first_name',
         'last_name',
@@ -22,6 +25,14 @@ class User extends Authenticatable
         'contact_num',
         'password',
         'gender',
+        'student_number',
+        'residence_id',
+        'room_id',
+        'move_in_date',
+        'expected_move_out',
+        'emergency_contact_name',
+        'emergency_contact_relation',
+        'emergency_contact_phone',
     ];
 
     /**
@@ -38,6 +49,8 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',   // Laravel 10+ password hashing cast
+        'move_in_date' => 'date',
+        'expected_move_out' => 'date',
     ];
 
     /* -------------------
@@ -87,8 +100,25 @@ class User extends Authenticatable
                     ->withTimestamps();
     }
 
-    public function bed()
+    public function residence()
     {
-        return $this->hasOne(Bed::class);
+        return $this->belongsTo(Residence::class, 'residence_id');
     }
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class, 'room_id');
+    }
+
+    public function maintenanceRequests()
+    {
+        return $this->hasMany(MaintenanceRequest::class);
+    }
+
+    //Get full name attribute
+    public function getNameAttribute()
+    {
+        return $this->first_name . ' ' . $this->last_name;
+    }
+
 }

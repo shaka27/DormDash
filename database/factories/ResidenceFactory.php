@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Campus;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Residence>
@@ -18,6 +19,7 @@ class ResidenceFactory extends Factory
     {
         return [
             'name'=>fake()->name(),
+            'campus_id'=>Campus::factory(),
         ];
     }
 }

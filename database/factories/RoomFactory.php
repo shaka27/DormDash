@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Residence;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Room>
@@ -18,7 +19,8 @@ class RoomFactory extends Factory
     {
         return [
             'number'=>fake()->numberBetween(1, 200),
-            'status'=>fake()->realText(1),
+            'status'=>fake()->randomLetter(),
+            'residence_id'=>\App\Models\Residence::inRandomOrder()->first()->id,
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Notification>
@@ -20,6 +21,7 @@ class NotificationFactory extends Factory
             'type'=>fake()->name(),
             'content'=>fake()->realText(100),
             'is_read'=>fake()->boolean(),
+            'user_id'=>\App\Models\User::inRandomOrder()->first()->id,
         ];
     }
 }

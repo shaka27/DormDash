@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Message>
@@ -18,6 +19,8 @@ class MessageFactory extends Factory
     {
         return [
             'message'=>fake()->realText(200),
+            'sender_id'=>\App\Models\User::inRandomOrder()->first()->id,
+            'receiver_id'=>\App\Models\User::inRandomOrder()->first()->id,
         ];
     }
 }

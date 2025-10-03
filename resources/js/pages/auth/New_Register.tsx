@@ -1,12 +1,11 @@
-import React, { ChangeEvent, FormEvent, useState } from "react";
-import { Head } from "@inertiajs/react";
-import { Inertia } from "@inertiajs/inertia";
+import React, { ChangeEvent, FormEvent } from "react";
+import { Head, useForm } from "@inertiajs/react";
 
 interface RegisterFormValues {
   first_name: string;
   last_name: string;
   email: string;
-  contact_number: string;
+  contact_num: string;
   gender: string;
   student_number: string;
   password: string;
@@ -14,11 +13,11 @@ interface RegisterFormValues {
 }
 
 export default function New_Register() {
-  const [values, setValues] = useState<RegisterFormValues>({
+  const { data, setData, post, processing, errors } = useForm<RegisterFormValues>({
     first_name: "",
     last_name: "",
     email: "",
-    contact_number: "",
+    contact_num: "",
     gender: "",
     student_number: "",
     password: "",
@@ -26,12 +25,12 @@ export default function New_Register() {
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setValues({ ...values, [e.target.name]: e.target.value });
+    setData(e.target.name as keyof RegisterFormValues, e.target.value);
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    Inertia.get("/login", values as Record<string, any>);
+    post("/register");
   };
 
   return (
@@ -56,11 +55,14 @@ export default function New_Register() {
                 <input
                   type="text"
                   name="first_name"
-                  value={values.first_name}
+                  value={data.first_name}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                   placeholder="John"
                 />
+                {errors.first_name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.first_name}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -69,11 +71,14 @@ export default function New_Register() {
                 <input
                   type="text"
                   name="last_name"
-                  value={values.last_name}
+                  value={data.last_name}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                   placeholder="Doe"
                 />
+                {errors.last_name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.last_name}</p>
+                )}
               </div>
             </div>
             <div>
@@ -83,11 +88,14 @@ export default function New_Register() {
               <input
                 type="email"
                 name="email"
-                value={values.email}
+                value={data.email}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="you@example.com"
               />
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-600">{errors.email}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -95,12 +103,15 @@ export default function New_Register() {
               </label>
               <input
                 type="tel"
-                name="contact_number"
-                value={values.contact_number}
+                name="contact_num"
+                value={data.contact_num}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="+27 12 345 6789"
               />
+              {errors.contact_num && (
+                <p className="mt-1 text-sm text-red-600">{errors.contact_num}</p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -109,7 +120,7 @@ export default function New_Register() {
                 </label>
                 <select
                   name="gender"
-                  value={values.gender}
+                  value={data.gender}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 >
@@ -119,6 +130,9 @@ export default function New_Register() {
                   <option value="other">Other</option>
                   <option value="prefer_not_to_say">Prefer not to say</option>
                 </select>
+                {errors.gender && (
+                  <p className="mt-1 text-sm text-red-600">{errors.gender}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -127,11 +141,14 @@ export default function New_Register() {
                 <input
                   type="text"
                   name="student_number"
-                  value={values.student_number}
+                  value={data.student_number}
                   onChange={handleChange}
                   className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                   placeholder="2024123456"
                 />
+                {errors.student_number && (
+                  <p className="mt-1 text-sm text-red-600">{errors.student_number}</p>
+                )}
               </div>
             </div>
             <div>
@@ -141,11 +158,14 @@ export default function New_Register() {
               <input
                 type="password"
                 name="password"
-                value={values.password}
+                value={data.password}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="••••••••"
               />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -154,18 +174,22 @@ export default function New_Register() {
               <input
                 type="password"
                 name="password_confirmation"
-                value={values.password_confirmation}
+                value={data.password_confirmation}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 placeholder="••••••••"
               />
+              {errors.password_confirmation && (
+                <p className="mt-1 text-sm text-red-600">{errors.password_confirmation}</p>
+              )}
             </div>
             {/* Buttons */}
             <button
               type="submit"
-              className="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors"
+              disabled={processing}
+              className="w-full bg-purple-600 text-white py-2 rounded-lg font-semibold hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Register
+              {processing ? "Registering..." : "Register"}
             </button>
           </form>
           {/* Footer */}

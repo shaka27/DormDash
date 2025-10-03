@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Residence extends Model
 {
+    use HasFactory;
+
+    protected $table = 'residence';
+
     protected $fillable = ['name', 'campus_id']; 
 
     public function campus()

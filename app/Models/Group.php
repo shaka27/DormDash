@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Group extends Model
 {
+    use HasFactory;
+
     protected $fillable = ['name', 'description']; 
+
+    protected $table = 'group';
 
     public function members() 
     {

@@ -15,21 +15,22 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $this->call([
-            UserSeeder::class,
-            EventSeeder::class,
             RoleSeeder::class,
-            ResidenceSeeder::class,
             CampusSeeder::class,
-            RoomSeeder::class,
-            BedSeeder::class,
-            NotificationSeeder::class,
-            MessageSeeder::class,
-            GroupMembersSeeder::class,
-            GroupSeeder::class,
-            VoteResponseSeeder::class,
-            VoteOptionSeeder::class,
-            VoteSeeder::class,
-            GroupRoleSeeder::class,
+            ResidenceSeeder::class,
+            AdminUserSeeder::class,
+            // UserSeeder::class,
+            // EventSeeder::class,
+            // RoomSeeder::class,
+            // BedSeeder::class,
+            // NotificationSeeder::class,
+            // MessageSeeder::class,
+            // GroupMemberSeeder::class,
+            // GroupSeeder::class,
+            // VoteResponseSeeder::class,
+            // VoteOptionSeeder::class,
+            // VoteSeeder::class,
+            // GroupRoleSeeder::class,
 
         ]);
 

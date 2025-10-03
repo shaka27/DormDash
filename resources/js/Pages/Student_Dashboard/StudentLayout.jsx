@@ -1,20 +1,29 @@
 // resources/js/Pages/StudentLayout.jsx
 import React, { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
-import { 
-  Home, 
-  DoorClosed, 
-  Calendar, 
-  Vote, 
-  Bell, 
-  MessageSquare, 
-  User ,
-  Hotel
+import {
+  Home,
+  DoorClosed,
+  Calendar,
+  Vote,
+  Bell,
+  MessageSquare,
+  User,
+  Hotel,
+  Settings
 } from "lucide-react";
 
 export default function StudentLayout({ children }) {
+
+  //  Get auth.user from Inertia shared props
+  const { auth } = usePage().props;
+
   const { url } = usePage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Check if user has management access
+  const userRoles = auth.user?.roles?.map(role => role.description) || [];
+  const hasManagementAccess = ['Admin', 'HouseParent', 'HouseCommittee'].some(role => userRoles.includes(role));
 
   const navigation = [
     {
@@ -25,40 +34,46 @@ export default function StudentLayout({ children }) {
     },
     {
       name: 'Rooms',
-      href: '/RoomDetails',
+      href: '/rooms',
       icon: DoorClosed,
-      current: url.startsWith('/RoomDetails')
+      current: url.startsWith('/rooms')
     },
     {
       name: 'Events',
-      href: '/Events',
+      href: '/events',
       icon: Calendar,
-      current: url.startsWith('/Events')
+      current: url.startsWith('/events')
     },
     {
       name: 'Voting',
-      href: '/VotingCentre',
+      href: '/voting-centre',
       icon: Vote,
-      current: url.startsWith('/VotingCentre')
+      current: url.startsWith('/voting-centre')
     },
     {
       name: 'Notifications',
-      href: '/Notifications',
+      href: '/notifications',
       icon: Bell,
-      current: url.startsWith('/Notifications')
+      current: url.startsWith('/notifications')
     },
     {
       name: 'Messages',
-      href: '/Messages',
+      href: '/messages',
       icon: MessageSquare,
-      current: url.startsWith('/Messages')
+      current: url.startsWith('/messages')
     },
     {
       name: 'Profile',
-      href: '/Profile',
+      href: '/profile',
       icon: User,
-      current: url.startsWith('/Profile')
-    }
+      current: url.startsWith('/profile')
+    },
+    ...(hasManagementAccess ? [{
+      name: 'Residence Management',
+      href: '/residence-management',
+      icon: Settings,
+      current: url.startsWith('/residence-management')
+    }] : [])
   ];
 
   return (
@@ -70,8 +85,8 @@ export default function StudentLayout({ children }) {
       >
         <div className="d-flex justify-content-between align-items-center mb-4">
            
-          <h4 className="mb-0">
-          <Hotel size={18} className="me-1" />DormDash</h4>
+          <h1 className="mb-0">
+          <Hotel size={18} className="me-1" />DormDash</h1>
           <button
             onClick={() => setSidebarOpen(false)}
             className="btn-close d-lg-none"
@@ -103,15 +118,15 @@ export default function StudentLayout({ children }) {
               className="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
               style={{ width: "40px", height: "40px" }}
             >
-              S
+              E
             </div>
             <div className="ms-3">
-              <p className="mb-0 fw-bold small">Evan Titus</p>
-              <p className="mb-0 text-muted small">Room 204B</p>
+              <p className="mb-0 fw-bold small">{auth.user?.name}</p>
+              <p className="mb-0 text-muted small">{auth.user?.email}</p>
             </div>
           </div>
           <Link
-            href="/Profile"
+            href="/profile"
             className="btn btn-outline-secondary btn-sm w-100 mt-2"
           >
             View Profile
@@ -134,19 +149,19 @@ export default function StudentLayout({ children }) {
               <h5 className="mb-0">Dashboard</h5>
             </div>
             <Link
-                href="/Notifications"
+                href="/notifications"
                 className="btn btn-notification position-relative me-2"
                 >
                 <Bell size={18} className="me-1" />
                 Notifications
-                <span                       
-                    
+                <span
+
                     className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                     style={{ fontSize: "0.5rem" }}
                     >
                     3
                 </span>
-                
+
             </Link>
                    
             </div>

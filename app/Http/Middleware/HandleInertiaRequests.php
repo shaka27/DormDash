@@ -35,12 +35,22 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        return [
-            ...parent::share($request),
+        return array_merge(parent::share($request), [
+            // Share authenticated user globally
             'auth' => [
-                'user' => $request->user(),
+                'user' => fn () => $request->user()
+                    ? [
+                        'id' => $request->user()->id,
+                        'name' => $request->user()->name,   // full name accessor
+                        'email' => $request->user()->email,
+                        'is_admin' => $request->user()->roles()->where('description', 'Admin')->exists(),
+                        'roles' => $request->user()->roles,
+                    ]
+                    : null,
             ],
+            // Share selected residence ID
+            'selectedResidenceId' => fn () => $request->session()->get('selected_residence_id'),
+        ]);
 
-        ];
     }
 }

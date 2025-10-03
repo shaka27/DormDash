@@ -2,107 +2,115 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User; // ← FIXED: Capital 'A' in App
+use App\Models\User;
+use App\Models\Access;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    /* =======================
+     * USER CRUD
+     * ======================= */
+
+    // List all users
     public function index()
     {
-        $users = User::paginate(10);
-        return Inertia::render('Users/Index', [
-            'users' => $users
-        ]);
+        return response()->json(User::all());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
+    // Show registration form
     public function create()
     {
-        return Inertia::render('auth/New_Register');
+        return inertia('auth/New_Register');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    // Create a new user (registration)
     public function store(Request $request)
     {
-        $request->validate([
-            'first_name' => 'required|string|max:100',
-            'last_name'  => 'required|string|max:100',
-            'email'      => 'required|email|unique:users',
-            'password'   => 'required|min:6',
-            'gender'     => 'required|string',
-            'contact_num'=> 'nullable|string',
+        $validated = $request->validate([
+            'first_name'            => 'required|string|max:255',
+            'last_name'             => 'required|string|max:255',
+            'email'                 => 'required|string|email|max:255|unique:users',
+            'contact_num'        => 'required|string|max:20',
+            'gender'                => 'required|string|in:male,female,other,prefer_not_to_say',
+            'student_number'        => 'required|string|max:255',
+            'password'              => 'required|string|min:8|confirmed',
         ]);
 
-        User::create([
-            'first_name'  => $request->first_name,
-            'last_name'   => $request->last_name,
-            'email'       => $request->email,
-            'password'    => bcrypt($request->password),
-            'gender'      => $request->gender,
-            'contact_num' => $request->contact_num,
-        ]);
+        // Check if student_number exists in access table
+        $access = Access::where('student_number', $validated['student_number'])->first();
 
-        return redirect()->route('users.index')->with('success', 'User created successfully.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
-    {
-        return Inertia::render('Users/Show', [
-            'user' => $user
-        ]);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
-    {
-        return Inertia::render('Users/Edit', [
-            'user' => $user
-        ]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, User $user)
-    {
-        $request->validate([
-            'first_name' => 'required|string|max:100',
-            'last_name'  => 'required|string|max:100',
-            'password'   => 'nullable|min:6',
-            'gender'     => 'required|string',
-            'contact_num'=> 'nullable|string',
-        ]);
-
-        $data = $request->only(['first_name', 'last_name', 'gender', 'contact_num']);
-        
-        if ($request->filled('password')) {
-            $data['password'] = bcrypt($request->password);
+        if (!$access) {
+            throw ValidationException::withMessages([
+                'student_number' => 'This student number is not authorized to register.',
+            ]);
         }
 
-        $user->update($data);
+        // Check if student number is already registered
+        $existingUser = User::where('student_number', $validated['student_number'])->first();
+        if ($existingUser) {
+            throw ValidationException::withMessages([
+                'student_number' => 'This student number has already been registered.',
+            ]);
+        }
 
-        return redirect()->route('users.index')->with('success', 'User updated successfully.');
+        // Create user with residence from access table
+        $user = User::create([
+            'first_name'      => $validated['first_name'],
+            'last_name'       => $validated['last_name'],
+            'email'           => $validated['email'],
+            'contact_num'  => $validated['contact_num'],
+            'gender'          => $validated['gender'],
+            'student_number'  => $validated['student_number'],
+            'password'        => Hash::make($validated['password']),
+            'residence_id'    => $access->residence_id,
+        ]);
+
+        $role = \App\Models\Role::where('description', $access->role)->first();
+        if ($role) {
+            $user->roles()->attach($role->id);
+        }
+
+        // Log the user in
+        Auth::login($user);
+        $request->session()->regenerate();
+
+        return redirect('/StudentDashboard');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
+    // Show a specific user
+    public function show($id)
     {
-        $user->delete();
-        return redirect()->route('users.index')->with('success', 'User deleted successfully.');
+        return response()->json(User::findOrFail($id));
+    }
+
+    // Update a user (but never email!)
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $validated = $request->validate([
+            'name'     => 'sometimes|required|string|max:255',
+            'password' => 'sometimes|required|string|min:8',
+            // email is NOT updatable
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return response()->json($user);
+    }
+
+    // Delete a user
+    public function destroy($id)
+    {
+        User::findOrFail($id)->delete();
+        return response()->json(['message' => 'User deleted successfully']);
     }
 }

@@ -18,9 +18,9 @@ class VoteFactory extends Factory
     {
         return [
             'title'=>fake()->name(),
-            'decription'=>fake()->realText(100),
-            'start_date'=>$startDate,
-            'end_date'=> $endDate,
+            'description'=>fake()->realText(100),
+            'start_date'=>fake()->dateTime(),
+            'end_date'=> fake()->dateTime(),
         ];
     }
 }
