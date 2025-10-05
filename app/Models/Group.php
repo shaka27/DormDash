@@ -33,4 +33,15 @@ class Group extends Model
                     ->withTimestamps();
     }
 
+    public function messages()
+    {
+        return $this->hasManyThrough(
+            Message::class,
+            Chatroom::class,
+            'group_id',     // Foreign key on chatrooms table
+            'chatroom_id', // Foreign key on messages table
+            'id',           // Local key on groups table
+            'id'            // Local key on chatrooms table
+        );
+    }
 }
