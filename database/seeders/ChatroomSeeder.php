@@ -13,6 +13,7 @@ class ChatroomSeeder extends Seeder
      */
     public function run(): void
     {
-        Chatroom::factory(50)->create();
+        //Chatroom::factory(50)->create();
+        
     }
 }

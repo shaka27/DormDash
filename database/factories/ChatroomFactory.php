@@ -20,7 +20,7 @@ class ChatroomFactory extends Factory
         return [
             'name'=> fake()->name(),
             'description' => fake()->realText(100),
-            'group_id' => App\Models\Chatroom::inRandomOrder()->first()->id,
+            'group_id' => \App\Models\Group::inRandomOrder()->first()->id,
         ];
     }
 }

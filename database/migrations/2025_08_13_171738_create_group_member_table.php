@@ -13,19 +13,17 @@ return new class extends Migration
     {
         Schema::create('group_member', function (Blueprint $table) {
             $table->id();
-
-             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')
-                  ->references('id')->on('users')
-                  ->onDelete('cascade'); 
-            $table->unsignedBigInteger('gr_id');
-            $table->foreign('gr_id')
-                  ->references('id')->on('group_role')
-                  ->onDelete('cascade');
-
+            $table->unsignedBigInteger('group_id');  // links to the group
+            $table->unsignedBigInteger('user_id');   // links to the user
+            $table->unsignedBigInteger('gr_id')->nullable(); // optional role
             $table->timestamps();
+
+            $table->foreign('group_id')->references('id')->on('group')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
+
+           
 
     /**
      * Reverse the migrations.

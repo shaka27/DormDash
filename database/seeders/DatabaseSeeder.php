@@ -23,15 +23,16 @@ class DatabaseSeeder extends Seeder
             EventSeeder::class,
             RoomSeeder::class,
             NotificationSeeder::class,
+            GroupSeeder::class,        
+            ChatroomSeeder::class,
+            UserSeeder::class,
+            GroupMemberSeeder::class,
             MessageSeeder::class,
-            // UserSeeder::class,
+            GroupRoleSeeder::class,
             // BedSeeder::class,
-            // GroupMemberSeeder::class,
-            // GroupSeeder::class,
             // VoteResponseSeeder::class,
             // VoteOptionSeeder::class,
             // VoteSeeder::class,
-            // GroupRoleSeeder::class,
 
         ]);
 

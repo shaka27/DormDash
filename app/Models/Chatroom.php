@@ -1,11 +1,14 @@
 <?php
 
 namespace App\Models;
-use Illuminate\Database\Eloquent\Model; 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory; 
 
 class Chatroom extends Model
 {
-    protected $table = 'chatrooms';
+    use HasFactory;
+
+    protected $table = 'chatroom';
 
     protected $fillable = [
         'name',
