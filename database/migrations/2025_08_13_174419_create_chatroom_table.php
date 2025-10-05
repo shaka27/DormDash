@@ -17,16 +17,15 @@ return new class extends Migration
              $table->string('name');
              $table->string('description');
 
-
-            $table->unsignedBigInteger('group_id');
+            // Belongs to a group (if chatrooms are inside groups)
+            $table->unsignedBigInteger('group_id')->nullable();
             $table->foreign('group_id')
                   ->references('id')->on('group')
-                  ->onDelete('cascade'); 
-
-             $table->unsignedBigInteger('residence_id');
-            $table->foreign('residence_id')
-                  ->references('id')->on('residence')
-                  ->onDelete('cascade'); 
+                  ->onDelete('cascade');
+            
+             // Enforce one chatroom per group
+            $table->unique('group_id');
+        
             $table->timestamps();
         });
     }

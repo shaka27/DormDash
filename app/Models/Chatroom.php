@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Models;
+use Illuminate\Database\Eloquent\Model; 
+
+class Chatroom extends Model
+{
+    protected $table = 'chatrooms';
+
+    protected $fillable = [
+        'name',
+        'description',
+        'group_id',  // The group this chatroom belongs to
+    ];
+
+    // The group that owns this chatroom (null if its a private chatroom)
+    public function group()
+    {
+        return $this->belongsTo(Group::class);
+    }
+
+    // Group messages only (receiver_id = null)
+    public function messages()
+    {
+        // Only messages where receiver_id is NULL (group messages)
+        return $this->hasMany(Message::class)->whereNull('receiver_id');
+    }
+}
