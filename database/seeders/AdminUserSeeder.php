@@ -21,7 +21,7 @@ class AdminUserSeeder extends Seeder
             [
                 'first_name' => 'denzel',
                 'last_name' => 'verster',
-                'email' => 'denzel@gmail.com',
+                'email' => 'evankyletitus27@gmail.com',
                 'contact_num' => '0123456789',
                 'password' => Hash::make('admin1234'),
                 'gender' => 'male',

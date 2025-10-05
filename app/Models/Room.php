@@ -22,4 +22,9 @@ class Room extends Model
     {
         return $this->hasMany(Bed::class, 'room_id'); 
     }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'room_id');
+    }
 }

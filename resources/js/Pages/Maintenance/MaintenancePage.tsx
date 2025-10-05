@@ -8,6 +8,7 @@
  */
 
 import React from "react"
+
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -16,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Plus, Filter, UserIcon, MapPin, Clock, AlertCircle } from "lucide-react"
+import { Search, Plus, Filter, UserIcon, MapPin, Clock, AlertCircle, ArrowLeft } from "lucide-react"
 
 // TypeScript interfaces
 interface Request {
@@ -296,11 +297,20 @@ const MaintenancePage: React.FC = () => {
   )
 
   // Component: Top Navigation
-  const TopNav: React.FC = () => (
+  const TopNav = () => (
     <nav className="bg-white shadow-sm border-b mb-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
+            {/* Back Button */}
+            <button
+              onClick={() => window.location.href = '/StudentDashboard'}
+              className="mr-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              title="Back to Dashboard"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            
             <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-[#D6B4FC] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">DD</span>
@@ -314,7 +324,6 @@ const MaintenancePage: React.FC = () => {
       </div>
     </nav>
   )
-
   // Component: Role Toggle
   const RoleToggle: React.FC = () => (
     <div className="mb-6">
