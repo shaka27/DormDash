@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Room extends Model
+{
+    use HasFactory;
+     // Explicitly define the table name
+    protected $table = 'room';
+    
+    protected $fillable = ['number', 'status', 'residence_id']; 
+
+    public function residence()
+    {
+        return $this->belongsTo(Residence::class, 'residence_id'); 
+    }
+
+    public function beds()
+    {
+        return $this->hasMany(Bed::class, 'room_id'); 
+    }
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'room_id');
+    }
+}
