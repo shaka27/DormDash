@@ -19,7 +19,13 @@ export default function EditUser({ user, roles }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    put(route("users.update", user.id));
+
+    const payload = {
+      ...data,
+      role_id: data.role_id === "" ? null : parseInt(data.role_id), // 👈 convert to integer
+    };
+
+    put(route("users.update", user.id), { data: payload });
   }
 
   return (
@@ -147,7 +153,7 @@ export default function EditUser({ user, roles }) {
             {/* Buttons */}
             <div className="flex justify-between mt-6">
               <Link
-                href={route("user-management.index")}
+                href={route("users.index")}
                 className="text-gray-600 hover:text-gray-800"
               >
                 ← Back

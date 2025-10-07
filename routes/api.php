@@ -78,8 +78,12 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 // CRUD for Users
-Route::apiResource('users', UserController::class);
-Route::middleware('auth:sanctum')->get('/students/count', [UserController::class, 'studentCount']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [UserController::class, 'index']);
+    Route::post('/user', [UserController::class, 'store']);
+    Route::put('/user/{id}', [UserController::class, 'update']);
+    Route::delete('/user/{id}', [UserController::class, 'destroy']);
+});
 
 //tESTING the CORS setup
 Route::get('/test-cors', function () {

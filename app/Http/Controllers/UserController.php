@@ -105,48 +105,39 @@ class UserController extends Controller
     }
 
     // Update a user
-    public function update(Request $request, $id)
+   public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
-            'first_name'    => 'sometimes|required|string|max:255',
-            'last_name'     => 'sometimes|required|string|max:255',
-            'contact_num'   => 'sometimes|required|string|max:20',
-            'gender'        => 'sometimes|required|string|in:male,female,other,prefer_not_to_say',
-            'password'      => 'sometimes|nullable|string|min:8',
-            'role_id'       => 'sometimes|required|exists:roles,id',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'contact_num' => 'nullable|string|max:20',
+            'gender' => 'nullable|string',
+            'role_id' => 'nullable|integer|exists:roles,id',
+            'password' => 'nullable|string|min:8',
         ]);
 
-        // Update basic fields
-        if (isset($validated['first_name'])) {
-            $user->first_name = $validated['first_name'];
-        }
-        if (isset($validated['last_name'])) {
-            $user->last_name = $validated['last_name'];
-        }
-        if (isset($validated['contact_num'])) {
-            $user->contact_num = $validated['contact_num'];
-        }
-        if (isset($validated['gender'])) {
-            $user->gender = $validated['gender'];
+        $user->update([
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'contact_num' => $validated['contact_num'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+        ]);
+
+        if (!empty($validated['password'])) {
+            $user->password = bcrypt($validated['password']);
+            $user->save();
         }
 
-        // Update password if provided
-        if (isset($validated['password']) && !empty($validated['password'])) {
-            $user->password = Hash::make($validated['password']);
-        }
-
-        $user->save();
-
-        // Update role if provided
-        if (isset($validated['role_id'])) {
+        // 🧩 Only sync role if provided
+        if (!empty($validated['role_id'])) {
             $user->roles()->sync([$validated['role_id']]);
         }
 
-        return redirect()->route('user-management.index')
-            ->with('success', 'User updated successfully');
+        return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
+    
 
     // Delete a user
     public function destroy($id)
