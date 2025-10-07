@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Access;
 use Illuminate\Http\Request;
@@ -26,6 +27,13 @@ class UserController extends Controller
     {
         return inertia('auth/New_Register');
     }
+
+    public function edit(User $user)
+{
+    return inertia::render('Student_Dashboard/EditUser', ['user' => $user]);
+}
+
+
 
     // Create a new user (registration)
     public function store(Request $request)
@@ -95,7 +103,9 @@ class UserController extends Controller
         $validated = $request->validate([
             'name'     => 'sometimes|required|string|max:255',
             'password' => 'sometimes|required|string|min:8',
-            // email is NOT updatable
+            'contact_num' => 'required|string|max:20',
+            'gender'  => 'required|string|in:male,female,other,prefer_not_to_say',
+            
         ]);
 
         if (isset($validated['password'])) {
