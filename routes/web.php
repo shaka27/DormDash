@@ -78,6 +78,7 @@ Route::middleware('auth')->group(function () {
          * USER MANAGEMENT ROUTES
          * ========================== */
         Route::get('/user-management', fn() => Inertia::render('Student_Dashboard/UserManagement'))->name('user-management.index');
+        Route::get('/admin/users', [UserController::class, 'index'])->name('user-management.index');
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');

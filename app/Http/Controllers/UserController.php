@@ -114,7 +114,7 @@ class UserController extends Controller
             'last_name' => 'required|string|max:255',
             'contact_num' => 'nullable|string|max:20',
             'gender' => 'nullable|string',
-            'role_id' => 'nullable|integer|exists:roles,id',
+            'role_id' => 'nullable|integer|exists:role,id',
             'password' => 'nullable|string|min:8',
         ]);
 
@@ -135,7 +135,7 @@ class UserController extends Controller
             $user->roles()->sync([$validated['role_id']]);
         }
 
-        return redirect()->route('users.index')->with('success', 'User updated successfully!');
+        return redirect()->route('user-management.index')->with('success', 'User updated successfully!');
     }
     
 

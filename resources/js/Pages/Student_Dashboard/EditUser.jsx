@@ -20,12 +20,20 @@ export default function EditUser({ user, roles }) {
   function handleSubmit(e) {
     e.preventDefault();
 
-    const payload = {
-      ...data,
-      role_id: data.role_id === "" ? null : parseInt(data.role_id), // 👈 convert to integer
-    };
+    // Ensure role_id is properly formatted
+    const formattedRoleId = data.role_id === "" ? null : parseInt(data.role_id);
 
-    put(route("users.update", user.id), { data: payload });
+    setData("role_id", formattedRoleId);
+
+    put(route("users.update", user.id), {
+      onSuccess: () => {
+        // ✅ Always go back to the User Management page
+        router.visit(route("user-management.index"));
+      },
+      onError: (errors) => {
+        console.error("Update failed:", errors);
+      },
+    });
   }
 
   return (
@@ -119,8 +127,10 @@ export default function EditUser({ user, roles }) {
             <div>
               <label className="block text-gray-600">Role</label>
               <select
-                value={data.role_id}
-                onChange={(e) => setData("role_id", e.target.value)}
+                value={data.role_id || ""}
+                onChange={(e) => 
+                  setData("role_id", e.target.value === "" ? null : parseInt(e.target.value))
+                }
                 className="w-full border rounded-lg px-3 py-2 mt-1 focus:outline-none focus:ring focus:ring-blue-300"
               >
                 <option value="">Select a role</option>
@@ -153,7 +163,7 @@ export default function EditUser({ user, roles }) {
             {/* Buttons */}
             <div className="flex justify-between mt-6">
               <Link
-                href={route("users.index")}
+                href={route("user-management.index")}
                 className="text-gray-600 hover:text-gray-800"
               >
                 ← Back
