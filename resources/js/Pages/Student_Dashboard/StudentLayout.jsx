@@ -128,9 +128,9 @@ export default function StudentLayout({ children }) {
     ...(isAdmin ? [
       {
         name: 'User Management',
-        href: '/admin/users',
+        href: '/user-management',
         icon: Users,
-        current: url.startsWith('/admin/users'),
+        current: url.startsWith('/user-management'), 
         roles: ['Admin']
       },
       
