@@ -7,34 +7,6 @@ export default function Events({ events }) {
 
     const eventsData = events || [];
 
-
-    // Use actual DB events if present, else fallback
-    /*const eventsData = (events && events.length > 0)
-        ? events
-        : [
-            {
-                id: 1,
-                name: "House Committee Meeting",
-                description: "Monthly meeting to discuss residence matters and upcoming events.",
-                date: "2024-09-02",
-                location: "Common Room A",
-            },
-            {
-                id: 2,
-                name: "Braai Day Celebration",
-                description: "Join us for a traditional South African braai with music and games.",
-                date: "2024-09-05",
-                location: "Residence Garden",
-            },
-            {
-                id: 3,
-                name: "Study Group - Mathematics",
-                description: "Weekly study session for first-year mathematics students.",
-                date: "2024-09-06",
-                location: "Study Hall",
-            },
-        ];*/
-
     return (
         <StudentLayout>
             <Head title="Events" />

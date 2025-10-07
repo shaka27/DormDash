@@ -11,6 +11,7 @@ export default function StudentDashboard() {
     const [studentCount, setStudentCount] = useState(0);
     const [upcomingCount, setUpcomingCount] = useState(0);
     const [activeVoteCount, setActiveVoteCount] = useState(0);
+    const [events, setEvents] = useState([]);
     const [error, setError] = useState(null);
     
     //Return total residents/students
@@ -26,6 +27,13 @@ export default function StudentDashboard() {
         };
 
         fetchCount();
+    }, []);
+
+    // Return of 3 upcomming events
+    useEffect(() => {
+        axios.get("/api/events/upcoming")
+            .then(res => setEvents(res.data))
+            .catch(err => console.error("Error fetching events:", err));
     }, []);
 
     // Return amount of all upcomming events
@@ -170,27 +178,20 @@ export default function StudentDashboard() {
                              </div>
                          </div>
                         <div className="p-6 space-y-4">
-                             <EventItem
-                                 title="House Committee Meeting"
-                                 time="Today, 2:00 PM"
-                                 location="Common Room A"
-                                 priority="high"
-                                 canManage={hasManagementAccess}
-                             />
-                             <EventItem
-                                 title="Braai Day Celebration"
-                                 time="Tomorrow, 6:00 PM"
-                                 location="Residence Garden"
-                                 priority="medium"
-                                 canManage={hasManagementAccess}
-                             />
-                             <EventItem
-                                 title="Study Group - Mathematics"
-                                 time="Friday, 7:00 PM"
-                                 location="Study Hall"
-                                 priority="low"
-                                 canManage={hasManagementAccess}
-                             />
+                             {events.length > 0 ? (
+                                events.map(event => (
+                                    <EventItem
+                                        key={event.id}
+                                        title={event.name}
+                                        time={new Date(event.date).toLocaleString()}
+                                        location={event.location || "TBA"}
+                                        priority={event.priority || "medium"}
+                                        canManage={hasManagementAccess}
+                                    />
+                                ))
+                            ) : (
+                                <p className="text-gray-500 text-sm">No upcoming events.</p>
+                            )}
                         </div>
                         <div className="px-6 pb-6">
                             <Link

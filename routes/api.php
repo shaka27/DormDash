@@ -24,12 +24,15 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/user/count', [UserController::class, 'count']);
 Route::get('/events/upcoming/count', [EventController::class, 'upcommingEvents']);
 Route::get('/vote/activeVotes/count', [VoteController::class, 'activeVotes']);
+Route::get('/events/upcoming', [EventController::class, 'upcoming']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     
+    
+
 
     // RESIDENCE protected routes here
     Route::get('/residences', [App\Http\Controllers\ResidenceController::class, 'index']);

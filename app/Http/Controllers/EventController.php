@@ -33,4 +33,14 @@ class EventController extends Controller
             'count' => $count
         ]);
     }
+
+    public function upcoming()
+    {
+        $events = \App\Models\Event::where('date', '>=', now())
+            ->orderBy('date', 'asc')
+            ->take(3)
+            ->get();
+
+        return response()->json($events);
+    }
 }
