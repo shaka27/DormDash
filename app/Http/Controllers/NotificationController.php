@@ -217,4 +217,19 @@ class NotificationController extends Controller
 
         return response()->json(['count' => $count]);
     }
+
+    /**
+     * Return latest announcements
+     */
+    
+    public function recentAnnouncements()
+    {
+        $notifications = \App\Models\Notification::latest()->take(5)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'count' => $notifications->count(),
+            'data' => $notifications,
+        ]);
+    }
 }

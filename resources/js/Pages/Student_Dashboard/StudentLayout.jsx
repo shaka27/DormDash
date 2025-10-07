@@ -30,13 +30,13 @@ export default function StudentLayout({ children }) {
   // 🔹 Fetch unread notifications count
   useEffect(() => {
     const fetchNotificationCount = async () => {
-    try {
-      const response = await axios.get('/notifications/count'); // no /api prefix
-      setNotificationCount(response.data.count);
-    } catch (error) {
-      console.error("Error fetching notification count:", error);
-    }
-  };
+      try {
+        const response = await axios.get('/api/notifications/count',{withCredentials: true});
+        setNotificationCount(response.data.count);
+      } catch (error) {
+        console.error("Error fetching notification count:", error);
+      }
+    };
 
     fetchNotificationCount();
 

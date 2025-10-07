@@ -25,14 +25,13 @@ Route::get('/user/count', [UserController::class, 'count']);
 Route::get('/events/upcoming/count', [EventController::class, 'upcommingEvents']);
 Route::get('/vote/activeVotes/count', [VoteController::class, 'activeVotes']);
 Route::get('/events/upcoming', [EventController::class, 'upcoming']);
+Route::get('/notifications/recent', [NotificationController::class,'recentAnnouncements']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
     
-    
-
 
     // RESIDENCE protected routes here
     Route::get('/residences', [App\Http\Controllers\ResidenceController::class, 'index']);
@@ -55,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class,  'update']);
     Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);
     Route::get('/notifications/count', [NotificationController::class, 'unreadCount']);
+    //Route::get('/notifications/recent', [NotificationController::class,'recentAnnouncements']);
 
         // CHATROOM protected routes
         Route::get('/chatrooms', [App\Http\Controllers\ChatroomController::class, 'index']);

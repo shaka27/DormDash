@@ -11,6 +11,7 @@ export default function StudentDashboard() {
     const [studentCount, setStudentCount] = useState(0);
     const [upcomingCount, setUpcomingCount] = useState(0);
     const [activeVoteCount, setActiveVoteCount] = useState(0);
+    const [recentAnnouncement, setRecentAnnouncement] = useState([]);
     const [events, setEvents] = useState([]);
     const [error, setError] = useState(null);
     
@@ -31,9 +32,19 @@ export default function StudentDashboard() {
 
     // Return of 3 upcomming events
     useEffect(() => {
-        axios.get("/api/events/upcoming")
+        axios.get("/api/events/upcoming",{ withCredentials: true })
             .then(res => setEvents(res.data))
             .catch(err => console.error("Error fetching events:", err));
+    }, []);
+
+    // Return of 5 recent announcements
+    useEffect(() => {
+        axios.get("/api/notifications/recent")
+            .then(res => {
+                console.log("✅ Notifications response:", res.data);
+                setRecentAnnouncement(res.data.data || []);
+            })
+            .catch(err => console.error("❌ Error fetching notifications:", err));
     }, []);
 
     // Return amount of all upcomming events
@@ -120,7 +131,7 @@ export default function StudentDashboard() {
                          <>
                              <StatCard
                                  title="Upcoming Events"
-                                 value="8"
+                                 value={upcomingCount}
                                  subtitle="This week"
                                  icon="📅"
                                  iconBg="bg-green-100"
@@ -136,7 +147,7 @@ export default function StudentDashboard() {
                              />
                              <StatCard
                                  title="Active Votes"
-                                 value="2"
+                                 value={activeVoteCount}
                                  subtitle="Cast your vote"
                                  icon="🗳️"
                                  iconBg="bg-purple-100"
@@ -257,21 +268,19 @@ export default function StudentDashboard() {
                                  </div>
                              </div>
                              <div className="p-6 space-y-4">
-                                 <AnnouncementItem
-                                     title="Water Maintenance - Building C"
-                                     time="2 hours ago"
-                                     priority="important"
-                                 />
-                                 <AnnouncementItem
-                                     title="New WiFi Password Available"
-                                     time="4 hours ago"
-                                     priority=""
-                                 />
-                                 <AnnouncementItem
-                                     title="Voting Now Open - House Captain Elections"
-                                     time="1 day ago"
-                                     priority="important"
-                                 />
+                                 
+                                {recentAnnouncement.length > 0 ? (
+                                    recentAnnouncement.map(notification => (
+                                        <AnnouncementItem
+                                            key={notification.id}
+                                            title={notification.content}
+                                            time={new Date(notification.created_at).toLocaleString()}
+                                            priority={notification.type || "medium"}
+                                        />
+                                    ))
+                                ) : (
+                                    <p className="text-gray-500 text-sm">No upcoming notifications.</p>
+                                )}
                              </div>
                              <div className="px-6 pb-6">
                                  <Link

@@ -21,6 +21,9 @@ class EventController extends Controller
         return Inertia::render('Student_Dashboard/EventDetails', ['event' => $event]);
     }
 
+    /**
+     * Return amount of upcomming events
+     */
     public function upcommingEvents()
     {
         // Get current time with Carbon
@@ -33,7 +36,10 @@ class EventController extends Controller
             'count' => $count
         ]);
     }
-
+    
+    /**
+     * Return 3 upcomming events
+     */
     public function upcoming()
     {
         $events = \App\Models\Event::where('date', '>=', now())
