@@ -11,7 +11,7 @@ class Event extends Model
 
     protected $table = 'events';
 
-    protected $fillable = ['name', 'date', 'location', 'description']; 
+    protected $fillable = ['name', 'discription', 'date', 'location']; 
 
     public function attendees() 
     {

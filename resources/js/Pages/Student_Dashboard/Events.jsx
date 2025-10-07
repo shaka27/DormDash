@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from 'react';
+import axios from "axios";
 import { Head, Link } from "@inertiajs/react";
 import StudentLayout from "./StudentLayout";
 
 export default function Events({ events }) {
+
+    const eventsData = events || [];
+
+
     // Use actual DB events if present, else fallback
-    const eventsData = (events && events.length > 0)
+    /*const eventsData = (events && events.length > 0)
         ? events
         : [
             {
@@ -28,7 +33,7 @@ export default function Events({ events }) {
                 date: "2024-09-06",
                 location: "Study Hall",
             },
-        ];
+        ];*/
 
     return (
         <StudentLayout>
