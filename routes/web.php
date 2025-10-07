@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\NotificationController;
 use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
@@ -44,8 +43,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
         Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');
-        Route::middleware(['auth', 'verified'])->get('/notifications/count', [NotificationController::class, 'unreadCount']);
-        Route::middleware(['auth', 'verified'])->get('/users/count', [UserController::class, 'count']);
         Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'update'])->name('notifications.update');
         Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
         Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');
@@ -69,33 +66,24 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/residence-management', [App\Http\Controllers\ResidenceManagementController::class, 'index'])->name('residence-management.index');
 
-        // Residence Management - Only for Admin, HouseParent, HouseCommittee
-        Route::post('/residence-management/access', [App\Http\Controllers\ResidenceManagementController::class, 'addAccess'])->name('residence-management.access.add');
-        Route::post('/residence-management/access/import', [App\Http\Controllers\ResidenceManagementController::class, 'importAccess'])->name('residence-management.access.import');
-        Route::delete('/residence-management/access/{id}', [App\Http\Controllers\ResidenceManagementController::class, 'deleteAccess'])->name('residence-management.access.delete');
 
-        /* ==========================
-         * USER MANAGEMENT ROUTES
-         * ========================== */
-        Route::get('/user-management', fn() => Inertia::render('Student_Dashboard/UserManagement'))->name('user-management.index');
-        Route::get('/admin/users', [UserController::class, 'index'])->name('user-management.index');
-        Route::get('/users', [UserController::class, 'index'])->name('users.index');
-        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
-        Route::get('/users/{id}', [UserController::class, 'show'])->name('users.show');
-        Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+        // Residence Management - Only for Admin, HouseParent, HouseCommittee
+
+            Route::post('/residence-management/access', [App\Http\Controllers\ResidenceManagementController::class, 'addAccess'])->name('residence-management.access.add');
+            Route::post('/residence-management/access/import', [App\Http\Controllers\ResidenceManagementController::class, 'importAccess'])->name('residence-management.access.import');
+            Route::delete('/residence-management/access/{id}', [App\Http\Controllers\ResidenceManagementController::class, 'deleteAccess'])->name('residence-management.access.delete');
+
     });
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/admin/users', [UserController::class, 'index'])->name('users.index');
-    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
-});
 
-// Maintenance Page 
+// Maintenance Page
 Route::get('/maintenance', function () {
-    return Inertia::render('Maintenance/page'); // Must match folder + filename (without .tsx)
+    // Example: Pass the current user role from backend auth/session
+    // Replace 'student' with actual logic from your backend
+    $userRole = auth()->check() && auth()->user()->is_admin ? 'admin' : 'student';
+
+    return Inertia::render('Maintenance/page', [
+        'role' => $userRole,
+    ]);
 })->name('maintenance');
