@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\VoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +22,8 @@ use App\Http\Controllers\NotificationController;
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::get('/user/count', [UserController::class, 'count']);
+Route::get('/events/upcoming/count', [EventController::class, 'upcommingEvents']);
+Route::get('/vote/activeVotes/count', [VoteController::class, 'activeVotes']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {

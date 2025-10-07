@@ -9,7 +9,11 @@ export default function StudentDashboard() {
     const { auth } = usePage().props;
 
     const [studentCount, setStudentCount] = useState(0);
+    const [upcomingCount, setUpcomingCount] = useState(0);
+    const [activeVoteCount, setActiveVoteCount] = useState(0);
     const [error, setError] = useState(null);
+    
+    //Return total residents/students
     useEffect(() => {
     const fetchCount = async () => {
         try {
@@ -22,6 +26,20 @@ export default function StudentDashboard() {
         };
 
         fetchCount();
+    }, []);
+
+    // Return amount of all upcomming events
+    useEffect(() => {
+        axios.get("/api/events/upcoming/count")
+        .then(res => setUpcomingCount(res.data.count))
+        .catch(err => console.error(err));
+    }, []);
+
+    // Return amount of all active votes
+    useEffect(() => {
+        axios.get("/api/vote/activeVotes/count")
+        .then(res => setActiveVoteCount(res.data.count))
+        .catch(err => console.error(err));
     }, []);
 
     // Extract user roles and create role checking helpers
@@ -75,7 +93,7 @@ export default function StudentDashboard() {
                              />
                              <StatCard
                                  title="Upcoming Events"
-                                 value="8"
+                                 value={upcomingCount}
                                  subtitle="This week"
                                  icon="📅"
                                  iconBg="bg-green-100"
@@ -83,7 +101,7 @@ export default function StudentDashboard() {
                              />
                              <StatCard
                                  title="Active Votes"
-                                 value="2"
+                                 value={activeVoteCount}
                                  subtitle="In progress"
                                  icon="🗳️"
                                  iconBg="bg-purple-100"
