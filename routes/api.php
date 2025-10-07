@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,7 +44,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store']);
     Route::get('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'show']);  //Display single specific notification
     Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class,  'update']);
-    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);  
+    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);
+    Route::get('/notifications/count', [NotificationController::class, 'unreadCount']);
 
         // CHATROOM protected routes
         Route::get('/chatrooms', [App\Http\Controllers\ChatroomController::class, 'index']);
@@ -66,8 +68,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/votes/{id}', [App\Http\Controllers\VotingController::class, 'update']);
         Route::delete('/votes/{id}', [App\Http\Controllers\VotingController::class, 'destroy']);
         Route::post('/votes/submit-response', [App\Http\Controllers\VotingController::class, 'submitResponse']);
-
-
+    
 });
 
 // CRUD for Users
