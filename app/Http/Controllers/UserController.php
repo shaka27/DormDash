@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Inertia\Inertia;
 use App\Models\User;
 use App\Models\Access;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -27,13 +27,6 @@ class UserController extends Controller
     {
         return inertia('auth/New_Register');
     }
-
-    public function edit(User $user)
-{
-    return inertia::render('Student_Dashboard/EditUser', ['user' => $user]);
-}
-
-
 
     // Create a new user (registration)
     public function store(Request $request)
@@ -103,9 +96,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'name'     => 'sometimes|required|string|max:255',
             'password' => 'sometimes|required|string|min:8',
-            'contact_num' => 'required|string|max:20',
-            'gender'  => 'required|string|in:male,female,other,prefer_not_to_say',
-            
+            // email is NOT updatable
         ]);
 
         if (isset($validated['password'])) {
@@ -123,4 +114,16 @@ class UserController extends Controller
         User::findOrFail($id)->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
+
+ 
+    public function count()
+    {
+        // Count all users who have the 'Student' role
+        $studentCount = User::whereHas('roles', function ($query) {
+            $query->where('description', ['Student', 'HouseCommittee']);
+        })->count();
+
+        return response()->json(['count' => $studentCount]);
+    }
+
 }

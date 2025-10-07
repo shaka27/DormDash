@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from "axios";
 import { Head, Link, usePage } from '@inertiajs/react';
 import StudentLayout from './StudentLayout';
 
@@ -6,6 +7,22 @@ export default function StudentDashboard() {
     
     //  Get auth.user from Inertia shared props
     const { auth } = usePage().props;
+
+    const [studentCount, setStudentCount] = useState(0);
+    const [error, setError] = useState(null);
+    useEffect(() => {
+    const fetchCount = async () => {
+        try {
+            const response = await axios.get("/api/user/count"); // ✅ lowercase 'user'
+            setStudentCount(response.data.count);
+        } catch (err) {
+            console.error("Error fetching student count:", err);
+            setError("Failed to fetch student count.");
+        }
+        };
+
+        fetchCount();
+    }, []);
 
     // Extract user roles and create role checking helpers
     const userRoles = auth.user?.roles?.map(role => role.description) || [];
@@ -42,7 +59,7 @@ export default function StudentDashboard() {
                          <>
                              <StatCard
                                  title="Total Students"
-                                 value="156"
+                                 value={studentCount}
                                  subtitle="Active residents"
                                  icon="👥"
                                  iconBg="bg-blue-100"
