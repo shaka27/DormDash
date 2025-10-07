@@ -19,11 +19,13 @@ use App\Http\Controllers\NotificationController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/user/count', [UserController::class, 'count']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    
 
     // RESIDENCE protected routes here
     Route::get('/residences', [App\Http\Controllers\ResidenceController::class, 'index']);
@@ -73,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // CRUD for Users
 Route::apiResource('users', UserController::class);
+Route::middleware('auth:sanctum')->get('/students/count', [UserController::class, 'studentCount']);
 
 //tESTING the CORS setup
 Route::get('/test-cors', function () {

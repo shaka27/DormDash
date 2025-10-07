@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');
         Route::middleware(['auth', 'verified'])->get('/notifications/count', [NotificationController::class, 'unreadCount']);
+        Route::middleware(['auth', 'verified'])->get('/users/count', [UserController::class, 'count']);
         Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'update'])->name('notifications.update');
         Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
         Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');
