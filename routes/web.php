@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\NotificationController;
 use Inertia\Inertia;
 
 Route::middleware('guest')->group(function () {
@@ -43,6 +44,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
         Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');
+        Route::middleware(['auth', 'verified'])->get('/notifications/count', [NotificationController::class, 'unreadCount']);
         Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'update'])->name('notifications.update');
         Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
         Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');

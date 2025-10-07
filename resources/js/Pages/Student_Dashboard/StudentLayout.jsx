@@ -1,5 +1,5 @@
 // resources/js/Pages/StudentLayout.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, usePage, router } from '@inertiajs/react';
 import {
   Home,
@@ -25,6 +25,25 @@ export default function StudentLayout({ children }) {
 
   const { url } = usePage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  // 🔹 Fetch unread notifications count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+    try {
+      const response = await axios.get('/notifications/count'); // no /api prefix
+      setNotificationCount(response.data.count);
+    } catch (error) {
+      console.error("Error fetching notification count:", error);
+    }
+  };
+
+    fetchNotificationCount();
+
+    // Optional: auto-refresh every 60 seconds
+    const interval = setInterval(fetchNotificationCount, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Extract user roles and create role checking helpers
   const userRoles = auth.user?.roles?.map(role => role.description) || [];
@@ -231,13 +250,14 @@ export default function StudentLayout({ children }) {
                 >
                 <Bell size={18} className="me-1" />
                 Notifications
+                {notificationCount > 0 && (
                 <span
-
-                    className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    style={{ fontSize: "0.5rem" }}
-                    >
-                    3
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  style={{ fontSize: "0.6rem" }}
+                >
+                  {notificationCount}
                 </span>
+              )}
 
             </Link>
                    

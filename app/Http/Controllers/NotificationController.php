@@ -199,4 +199,18 @@ class NotificationController extends Controller
             'message' => 'Notification deleted successfully',
         ]);
     }
+    
+    /**
+     * Return unread notification count for user
+     */
+    public function unreadCount()
+    {
+        $user = Auth::user();
+
+        $count = Notification::where('recipient_id', $user->id)
+                    ->where('is_read', false)
+                    ->count();
+
+        return response()->json(['count' => $count]);
+    }
 }
