@@ -59,17 +59,6 @@ export default function UserManagement() {
                     )}
                 </div>
 
-                {/* Search Bar */}
-                <div className="bg-white p-4 rounded shadow-sm flex items-center justify-between">
-                    <input
-                        type="text"
-                        placeholder="Search by name, email or student number..."
-                        className="border border-gray-300 rounded px-4 py-2 w-full md:w-1/2 focus:ring-indigo-500 focus:border-indigo-500"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                    />
-                </div>
-
                 {/* User Table */}
                 <div className="bg-white rounded shadow-sm overflow-x-auto">
                     {loading ? (
