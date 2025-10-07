@@ -14,6 +14,8 @@ class NotificationSeeder extends Seeder
      */
     public function run(): void
     {
+        Notification::factory(100)->create();
+
         // Get the first residence and users
         $residence = Residence::first();
         $users = User::take(5)->get();

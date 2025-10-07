@@ -19,7 +19,7 @@ class EventFactory extends Factory
         return [
             'name' => fake() -> name(),
             'description' => fake() -> realtext(50),
-            'date' => fake()-> date(),
+            'date' => fake()-> dateTimeBetween('-3 week', '+3 week'),
             'location' => fake() -> words(2, true),
         ];
     }

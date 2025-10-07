@@ -56,6 +56,10 @@ class NotificationController extends Controller
                     'residence_id' => $notification->residence_id,
                 ];
             });
+        
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json($notifications);
+        }
 
         return Inertia::render('Student_Dashboard/Notifications', [
             'notifications' => $notifications,

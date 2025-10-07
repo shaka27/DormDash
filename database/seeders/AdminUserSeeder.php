@@ -25,6 +25,7 @@ class AdminUserSeeder extends Seeder
                 'contact_num' => '0123456789',
                 'password' => Hash::make('admin1234'),
                 'gender' => 'male',
+                'student_number'=>'1111111111'
             ]
         );
 
