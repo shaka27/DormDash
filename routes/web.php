@@ -39,10 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware('residence.selected')->group(function () {
         // Student Dashboard – pass the authenticated user to the page
         Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
-        
-        // Staff Dashboard
-        Route::get('/staff', fn() => Inertia::render('Staff'))->name('staff.dashboard');
-
         Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index');
         Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
         Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
