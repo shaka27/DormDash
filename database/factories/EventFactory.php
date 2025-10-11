@@ -18,9 +18,9 @@ class EventFactory extends Factory
     {
         return [
             'name' => fake() -> name(),
-            'date' => fake() -> dateTimeBetween('now','+1 year'),
-            'location' => fake()-> city(),
-            'description' => fake() -> realText(100),
+            'description' => fake() -> realtext(50),
+            'date' => fake()-> dateTimeBetween('-3 week', '+3 week'),
+            'location' => fake() -> words(2, true),
         ];
     }
 }

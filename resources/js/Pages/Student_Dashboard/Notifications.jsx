@@ -1,5 +1,6 @@
 // resources/js/Pages/Notifications.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Head, router, useForm } from "@inertiajs/react";
 import StudentLayout from "./StudentLayout";
 
@@ -9,6 +10,7 @@ export default function Notifications({ notifications: initialNotifications, can
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [showEditForm, setShowEditForm] = useState(false);
     const [notificationsData, setNotificationsData] = useState(initialNotifications || []);
+    const [error, setError] = useState(null);
 
     const { data, setData, post, processing, errors, reset } = useForm({
         type: '',

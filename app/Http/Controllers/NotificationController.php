@@ -56,6 +56,10 @@ class NotificationController extends Controller
                     'residence_id' => $notification->residence_id,
                 ];
             });
+        
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json($notifications);
+        }
 
         return Inertia::render('Student_Dashboard/Notifications', [
             'notifications' => $notifications,
@@ -197,6 +201,35 @@ class NotificationController extends Controller
 
         return redirect()->back()->with([
             'message' => 'Notification deleted successfully',
+        ]);
+    }
+    
+    /**
+     * Return unread notification count for user
+     */
+    public function unreadCount()
+    {
+        $user = Auth::user();
+
+        $count = Notification::where('recipient_id', $user->id)
+                    ->where('is_read', false)
+                    ->count();
+
+        return response()->json(['count' => $count]);
+    }
+
+    /**
+     * Return latest announcements
+     */
+    
+    public function recentAnnouncements()
+    {
+        $notifications = \App\Models\Notification::latest()->take(5)->get();
+
+        return response()->json([
+            'status' => 'success',
+            'count' => $notifications->count(),
+            'data' => $notifications,
         ]);
     }
 }

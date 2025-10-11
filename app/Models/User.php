@@ -46,7 +46,7 @@ class User extends Authenticatable
     /**
      * The attributes that should be cast.
      */
-    protected $casts = [
+     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',   // Laravel 10+ password hashing cast
         'move_in_date' => 'date',
@@ -113,6 +113,22 @@ class User extends Authenticatable
     public function maintenanceRequests()
     {
         return $this->hasMany(MaintenanceRequest::class);
+    }
+    
+
+    // Groups  a User belongs to (via pivot)
+    public function groups()
+    {
+        return $this->belongsToMany(Group::class, 'group_member')
+                    ->withPivot('gr_id')
+                    ->withTimestamps();
+    }
+
+
+    // All private messages involving this user
+    public function privateMessages()
+    {
+        return $this->messagesSent()->orWhere('receiver_id', $this->id);
     }
 
     //Get full name attribute

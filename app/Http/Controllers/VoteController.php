@@ -303,4 +303,17 @@ class VoteController extends Controller
 
         return $user->roles()->whereIn('description', $allowedRoles)->exists();
     }
+
+    public function activeVotes()
+    {
+        $now = now();
+
+        $activeVotes = Vote::where('start_date','<=',$now)->where('end_date', '>=', $now)->get();
+
+        $count = $activeVotes->count();
+
+        return response()->json([
+            'count'=>$count,
+        ]);
+    }
 }

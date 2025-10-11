@@ -32,6 +32,6 @@ class Notification extends Model
 
     public function residence()
     {
-        return $this->belongsTo(Residence::class);
+        return $this->belongsTo(Residence::class, 'residence_id');
     }
 }

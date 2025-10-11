@@ -18,7 +18,7 @@ class AccessFactory extends Factory
     public function definition(): array
     {
         return [
-            'student_number'=>fake()->unique()->numerify('2########'),
+            'student_number'=>fake()->unique()->numerify('########'),
             'residence_id'=>\App\Models\Residence::inRandomOrder()->first()->id,
         ];
     }

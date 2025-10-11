@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Room;
+use App\Models\Residence;
+use Illuminate\Database\Seeder;
 
 class RoomSeeder extends Seeder
 {
@@ -13,6 +13,26 @@ class RoomSeeder extends Seeder
      */
     public function run(): void
     {
-        Room::factory(50)->create();
+        $residences = Residence::take(3)->get();
+
+        if ($residences->isEmpty()) {
+            return; // Skip if no residences available
+        }
+
+        foreach ($residences as $residence) {
+            // Create rooms for each residence
+            for ($floor = 1; $floor <= 4; $floor++) {
+                for ($roomNum = 1; $roomNum <= 10; $roomNum++) {
+                    $statuses = ['Available', 'Occupied', 'Maintenance', 'Reserved'];
+                    $status = $statuses[array_rand($statuses)];
+                    
+                    Room::create([
+                        'residence_id' => $residence->id,
+                        'number' => $floor . sprintf('%02d', $roomNum),
+                        'status' => $status,
+                    ]);
+                }
+            }
+        }
     }
 }

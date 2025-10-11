@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEvent } from "react";
+import React, { ChangeEvent, FormEvent, useEffect } from "react";
 import { Head, useForm } from "@inertiajs/react";
 
 interface LoginFormValues {
@@ -12,13 +12,22 @@ export default function New_Login() {
     password: "",
   });
 
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setData(e.target.name as keyof LoginFormValues, e.target.value);
   };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    post("/login");
+    console.log('Submitting form...');
+    post("/login", {
+      onError: (errors) => {
+        console.log('Login errors:', errors);
+      },
+      onSuccess: () => {
+        console.log('Login successful!');
+      }
+    });
   };
 
   return (
@@ -66,7 +75,7 @@ export default function New_Login() {
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <a href="/register" className="text-purple-600 hover:underline">Sign up</a>
           </p>
         </div>

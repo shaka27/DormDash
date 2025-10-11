@@ -4,6 +4,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\VoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,11 +21,17 @@ use App\Http\Controllers\UserController;
 
 // Public routes
 Route::post('/login', [AuthController::class, 'login']);
+Route::get('/user/count', [UserController::class, 'count']);
+Route::get('/events/upcoming/count', [EventController::class, 'upcommingEvents']);
+Route::get('/vote/activeVotes/count', [VoteController::class, 'activeVotes']);
+Route::get('/events/upcoming', [EventController::class, 'upcoming']);
+Route::get('/notifications/recent', [NotificationController::class,'recentAnnouncements']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
+    
 
     // RESIDENCE protected routes here
     Route::get('/residences', [App\Http\Controllers\ResidenceController::class, 'index']);
@@ -43,7 +52,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store']);
     Route::get('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'show']);  //Display single specific notification
     Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class,  'update']);
-    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);  
+    Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);
+    Route::get('/notifications/count', [NotificationController::class, 'unreadCount']);
+    //Route::get('/notifications/recent', [NotificationController::class,'recentAnnouncements']);
 
         // CHATROOM protected routes
         Route::get('/chatrooms', [App\Http\Controllers\ChatroomController::class, 'index']);
@@ -66,12 +77,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/votes/{id}', [App\Http\Controllers\VotingController::class, 'update']);
         Route::delete('/votes/{id}', [App\Http\Controllers\VotingController::class, 'destroy']);
         Route::post('/votes/submit-response', [App\Http\Controllers\VotingController::class, 'submitResponse']);
-
-
+    
 });
 
 // CRUD for Users
-Route::apiResource('users', UserController::class);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [UserController::class, 'index']);
+    Route::post('/user', [UserController::class, 'store']);
+    Route::put('/user/{id}', [UserController::class, 'update']);
+    Route::delete('/user/{id}', [UserController::class, 'destroy']);
+});
 
 //tESTING the CORS setup
 Route::get('/test-cors', function () {

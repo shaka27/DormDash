@@ -19,15 +19,22 @@ return new class extends Migration
            $table->foreign('sender_id')
                  ->references('id')->on('users')
                  ->onDelete('cascade');
+            
+            // Message content
+            $table->text('message');
 
-           $table->unsignedBigInteger('receiver_id');
+            // Receiver (nullable, only for private DMs)
+           $table->unsignedBigInteger('receiver_id')->nullable();
            $table->foreign('receiver_id')  
                  ->references('id')->on('users')
-                 ->onDelete('cascade');     
+                 ->onDelete('cascade'); 
+        
+            // Chatroom (nullable, only for group chat messages)
+            $table->unsignedBigInteger('chatroom_id')->nullable();
+            $table->foreign('chatroom_id')
+                  ->references('id')->on('chatroom')
+                  ->onDelete('cascade');
 
-
-
-            $table->string('message');
 
             $table->timestamps();
         });
@@ -40,4 +47,4 @@ return new class extends Migration
     {
         Schema::dropIfExists('messages');
     }
-};
+}; 

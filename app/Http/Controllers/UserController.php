@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Access;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 
 class UserController extends Controller
 {
@@ -18,7 +20,9 @@ class UserController extends Controller
     // List all users
     public function index()
     {
-        return response()->json(User::all());
+        // Include roles relationship
+        $users = User::with('roles')->get();
+        return response()->json($users);
     }
 
     // Show registration form
@@ -34,7 +38,7 @@ class UserController extends Controller
             'first_name'            => 'required|string|max:255',
             'last_name'             => 'required|string|max:255',
             'email'                 => 'required|string|email|max:255|unique:users',
-            'contact_num'        => 'required|string|max:20',
+            'contact_num'           => 'required|string|max:20',
             'gender'                => 'required|string|in:male,female,other,prefer_not_to_say',
             'student_number'        => 'required|string|max:255',
             'password'              => 'required|string|min:8|confirmed',
@@ -62,14 +66,14 @@ class UserController extends Controller
             'first_name'      => $validated['first_name'],
             'last_name'       => $validated['last_name'],
             'email'           => $validated['email'],
-            'contact_num'  => $validated['contact_num'],
+            'contact_num'     => $validated['contact_num'],
             'gender'          => $validated['gender'],
             'student_number'  => $validated['student_number'],
             'password'        => Hash::make($validated['password']),
             'residence_id'    => $access->residence_id,
         ]);
 
-        $role = \App\Models\Role::where('description', $access->role)->first();
+        $role = Role::where('description', $access->role)->first();
         if ($role) {
             $user->roles()->attach($role->id);
         }
@@ -84,33 +88,72 @@ class UserController extends Controller
     // Show a specific user
     public function show($id)
     {
-        return response()->json(User::findOrFail($id));
+        $user = User::with('roles')->findOrFail($id);
+        return response()->json($user);
     }
 
-    // Update a user (but never email!)
-    public function update(Request $request, $id)
+    // Show edit form
+    public function edit($id)
+    {
+        $user = User::with('roles')->findOrFail($id);
+        $roles = Role::all();
+        
+        return Inertia::render('Student_Dashboard/EditUser', [
+            'user' => $user,
+            'roles' => $roles
+        ]);
+    }
+
+    // Update a user
+   public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
         $validated = $request->validate([
-            'name'     => 'sometimes|required|string|max:255',
-            'password' => 'sometimes|required|string|min:8',
-            // email is NOT updatable
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'contact_num' => 'nullable|string|max:20',
+            'gender' => 'nullable|string',
+            'role_id' => 'nullable|integer|exists:role,id',
+            'password' => 'nullable|string|min:8',
         ]);
 
-        if (isset($validated['password'])) {
-            $validated['password'] = bcrypt($validated['password']);
+        $user->update([
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'contact_num' => $validated['contact_num'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+        ]);
+
+        if (!empty($validated['password'])) {
+            $user->password = bcrypt($validated['password']);
+            $user->save();
         }
 
-        $user->update($validated);
+        // 🧩 Only sync role if provided
+        if (!empty($validated['role_id'])) {
+            $user->roles()->sync([$validated['role_id']]);
+        }
 
-        return response()->json($user);
+        return redirect()->route('user-management.index')->with('success', 'User updated successfully!');
     }
+    
 
     // Delete a user
     public function destroy($id)
     {
         User::findOrFail($id)->delete();
         return response()->json(['message' => 'User deleted successfully']);
+    }
+
+    // Count students
+    public function count()
+    {
+        // Count all users who have the 'Student' or 'HouseCommittee' role
+        $studentCount = User::whereHas('roles', function ($query) {
+            $query->whereIn('description', ['Student', 'HouseCommittee']);
+        })->count();
+
+        return response()->json(['count' => $studentCount]);
     }
 }

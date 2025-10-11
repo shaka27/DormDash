@@ -20,4 +20,33 @@ class EventController extends Controller
         $event = Event::findOrFail($event);
         return Inertia::render('Student_Dashboard/EventDetails', ['event' => $event]);
     }
+
+    /**
+     * Return amount of upcomming events
+     */
+    public function upcommingEvents()
+    {
+        // Get current time with Carbon
+        $now = now();
+        $upcomingEvents = Event::where('date', '>', $now)->get();
+        // Count them
+        $count = $upcomingEvents->count();
+        // Return as JSON (or however you need it)
+        return response()->json([
+            'count' => $count
+        ]);
+    }
+    
+    /**
+     * Return 3 upcomming events
+     */
+    public function upcoming()
+    {
+        $events = \App\Models\Event::where('date', '>=', now())
+            ->orderBy('date', 'asc')
+            ->take(3)
+            ->get();
+
+        return response()->json($events);
+    }
 }

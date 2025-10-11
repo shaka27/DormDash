@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
+use App\Models\Residence;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Notification>
@@ -22,6 +23,8 @@ class NotificationFactory extends Factory
             'content'=>fake()->realText(100),
             'is_read'=>fake()->boolean(),
             'user_id'=>\App\Models\User::inRandomOrder()->first()->id,
+            'recipient_id'=>\App\Models\User::inRandomOrder()->first()->id,
+            'residence_id'=>\App\Models\Residence::inRandomOrder()->first()->id,
         ];
     }
 }

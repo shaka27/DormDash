@@ -1,6 +1,6 @@
 // resources/js/Pages/StudentLayout.jsx
-import React, { useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Link, usePage, router } from '@inertiajs/react';
 import {
   Home,
   DoorClosed,
@@ -10,7 +10,12 @@ import {
   MessageSquare,
   User,
   Hotel,
-  Settings
+  Settings,
+  Wrench,
+  Users,
+  Building,
+  Menu,
+  X
 } from "lucide-react";
 
 export default function StudentLayout({ children }) {
@@ -20,61 +25,142 @@ export default function StudentLayout({ children }) {
 
   const { url } = usePage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
 
-  // Check if user has management access
+  // 🔹 Fetch unread notifications count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      try {
+        const response = await axios.get('/api/notifications/count',{withCredentials: true});
+        setNotificationCount(response.data.count);
+      } catch (error) {
+        console.error("Error fetching notification count:", error);
+      }
+    };
+
+    fetchNotificationCount();
+
+    // Optional: auto-refresh every 60 seconds
+    const interval = setInterval(fetchNotificationCount, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Extract user roles and create role checking helpers
   const userRoles = auth.user?.roles?.map(role => role.description) || [];
-  const hasManagementAccess = ['Admin', 'HouseParent', 'HouseCommittee'].some(role => userRoles.includes(role));
+  
+  // Role checking helpers
+  const hasRole = (roles) => roles.some(role => userRoles.includes(role));
+  const isAdmin = hasRole(['Admin']);
+  const isHouseParent = hasRole(['HouseParent']);
+  const isHouseCommittee = hasRole(['HouseCommittee']);
+  const isStudent = hasRole(['Student']);
+  const hasManagementAccess = isAdmin || isHouseParent || isHouseCommittee;
 
+  // Define navigation based on roles
   const navigation = [
     {
       name: 'Dashboard',
       href: '/StudentDashboard',
       icon: Home,
-      current: url === '/StudentDashboard'
+      current: url === '/StudentDashboard',
+      roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee'] // All roles
     },
     {
       name: 'Rooms',
       href: '/rooms',
       icon: DoorClosed,
-      current: url.startsWith('/rooms')
+      current: url.startsWith('/rooms'),
+      roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee']
     },
     {
       name: 'Events',
       href: '/events',
       icon: Calendar,
-      current: url.startsWith('/events')
+      current: url.startsWith('/events'),
+      roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee']
     },
     {
       name: 'Voting',
       href: '/voting-centre',
       icon: Vote,
-      current: url.startsWith('/voting-centre')
+      current: url.startsWith('/voting-centre'),
+      roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee']
     },
     {
       name: 'Notifications',
       href: '/notifications',
       icon: Bell,
-      current: url.startsWith('/notifications')
+      current: url.startsWith('/notifications'),
+      roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee']
     },
     {
       name: 'Messages',
       href: '/messages',
       icon: MessageSquare,
-      current: url.startsWith('/messages')
+      current: url.startsWith('/messages'),
+      roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee']
+    },
+    {
+      name: 'Maintenance',
+      href: '/maintenance',
+      icon: Wrench,
+      current: url.startsWith('/maintenance'),
+      roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee']
     },
     {
       name: 'Profile',
       href: '/profile',
       icon: User,
-      current: url.startsWith('/profile')
+      current: url.startsWith('/profile'),
+      roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee']
     },
-    ...(hasManagementAccess ? [{
-      name: 'Residence Management',
-      href: '/residence-management',
-      icon: Settings,
-      current: url.startsWith('/residence-management')
-    }] : [])
+    // Admin and House Committee specific items
+    ...(hasManagementAccess ? [
+      {
+        name: 'Residence Management',
+        href: '/residence-management',
+        icon: Settings,
+        current: url.startsWith('/residence-management'),
+        roles: ['Admin', 'HouseParent', 'HouseCommittee']
+      }
+    ] : []),
+    // Admin only items
+    ...(isAdmin ? [
+      {
+        name: 'User Management',
+        href: '/user-management',
+        icon: Users,
+        current: url.startsWith('/user-management'), 
+        roles: ['Admin']
+      },
+      
+    ] : [])
   ];
+
+  // Filter navigation based on user roles
+  const visibleNavigation = navigation.filter(item => 
+    !item.roles || hasRole(item.roles)
+  );
+
+  // Get role badge color and label
+  const getRoleBadgeColor = () => {
+    if (isAdmin) return 'bg-danger text-white';
+    if (isHouseParent) return 'bg-info text-white';
+    if (isHouseCommittee) return 'bg-warning text-dark';
+    return 'bg-success text-white';
+  };
+
+  const getRoleLabel = () => {
+    if (isAdmin) return 'Admin';
+    if (isHouseParent) return 'House Parent';
+    if (isHouseCommittee) return 'House Committee';
+    return 'Student';
+  };
+
+  const handleLogout = () => {
+    // Use Inertia's router for proper logout
+    router.post('/logout');
+  };
 
   return (
     <div className="d-flex" style={{ height: "100vh" }}>
@@ -95,7 +181,7 @@ export default function StudentLayout({ children }) {
         </div>
 
         <ul className="nav flex-column">
-          {navigation.map((item) => (
+          {visibleNavigation.map((item) => (
             <li key={item.name} className="nav-item">
               <Link
                 href={item.href}
@@ -118,19 +204,29 @@ export default function StudentLayout({ children }) {
               className="bg-primary rounded-circle d-flex align-items-center justify-content-center text-white fw-bold"
               style={{ width: "40px", height: "40px" }}
             >
-              E
+              {auth.user?.name?.charAt(0).toUpperCase()}
             </div>
             <div className="ms-3">
               <p className="mb-0 fw-bold small">{auth.user?.name}</p>
-              <p className="mb-0 text-muted small">{auth.user?.email}</p>
+              <span className={`badge ${getRoleBadgeColor()} small`}>
+                {getRoleLabel()}
+              </span>
             </div>
           </div>
-          <Link
-            href="/profile"
-            className="btn btn-outline-secondary btn-sm w-100 mt-2"
-          >
-            View Profile
-          </Link>
+          <div className="d-flex gap-2 mt-2">
+            <Link
+              href="/profile"
+              className="btn btn-outline-secondary btn-sm flex-fill"
+            >
+              Profile
+            </Link>
+            <button
+              onClick={handleLogout}
+              className="btn btn-outline-danger btn-sm"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -154,13 +250,14 @@ export default function StudentLayout({ children }) {
                 >
                 <Bell size={18} className="me-1" />
                 Notifications
+                {notificationCount > 0 && (
                 <span
-
-                    className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                    style={{ fontSize: "0.5rem" }}
-                    >
-                    3
+                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  style={{ fontSize: "0.6rem" }}
+                >
+                  {notificationCount}
                 </span>
+              )}
 
             </Link>
                    
