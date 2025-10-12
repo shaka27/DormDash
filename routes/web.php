@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MaintenanceRequestController; // Make sure this is imported
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -34,6 +35,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/residence-overview', [App\Http\Controllers\ResidenceController::class, 'overview'])->name('residence.overview');
     Route::post('/residence/select', [App\Http\Controllers\ResidenceController::class, 'select'])->name('residence.select');
 
+    // MAINTENANCE ROUTES - MOVED INSIDE AUTH GROUP
+    Route::get('/maintenance', [MaintenanceRequestController::class, 'index'])->name('maintenance.index');
+    Route::get('/maintenance/create', [MaintenanceRequestController::class, 'create'])->name('maintenance.create');
+    Route::post('/maintenance', [MaintenanceRequestController::class, 'store'])->name('maintenance.store');
+    
+    // Admin maintenance routes
+    Route::get('/admin/maintenance', [MaintenanceRequestController::class, 'adminIndex'])->name('admin.maintenance.index');
+    Route::patch('/admin/maintenance/{maintenanceRequest}', [MaintenanceRequestController::class, 'update'])->name('admin.maintenance.update');
+
     // All residence-specific routes - require residence to be selected for admins
     Route::middleware('residence.selected')->group(function () {
         // Student Dashboard – pass the authenticated user to the page
@@ -59,10 +69,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
-        // Maintenance requests
-        Route::get('/maintenance-requests', [App\Http\Controllers\MaintenanceRequestController::class, 'index'])->name('maintenance.index');
-        Route::get('/maintenance-requests/create', [App\Http\Controllers\MaintenanceRequestController::class, 'create'])->name('maintenance.create');
-        Route::post('/maintenance-requests', [App\Http\Controllers\MaintenanceRequestController::class, 'store'])->name('maintenance.store');
+        // REMOVED DUPLICATE MAINTENANCE ROUTES FROM HERE
 
         Route::get('/residence-management', [App\Http\Controllers\ResidenceManagementController::class, 'index'])->name('residence-management.index');
 
@@ -87,15 +94,3 @@ Route::middleware('auth')->group(function () {
 
     });
 });
-
-
-// Maintenance Page
-Route::get('/maintenance', function () {
-    // Example: Pass the current user role from backend auth/session
-    // Replace 'student' with actual logic from your backend
-    $userRole = auth()->check() && auth()->user()->is_admin ? 'admin' : 'student';
-
-    return Inertia::render('Maintenance/page', [
-        'role' => $userRole,
-    ]);
-})->name('maintenance');

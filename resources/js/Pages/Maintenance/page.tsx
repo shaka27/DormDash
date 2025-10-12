@@ -1,10 +1,10 @@
-import React from "react"
-import MaintenancePage from "./MaintenancePage"
+import MaintenancePage from './MaintenancePage'
 
 interface PageProps {
-  role: "student" | "admin"
+  requests: any[]
+  userRole: 'student' | 'admin' | 'house_parent' | 'house_committee'
 }
 
-export default function Page({ role }: PageProps) {
-  return <MaintenancePage role={role} />
+export default function Page({ requests, userRole }: PageProps) {
+  return <MaintenancePage initialRequests={requests} userRole={userRole} />
 }
