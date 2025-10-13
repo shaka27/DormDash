@@ -127,4 +127,19 @@ class NotificationController extends Controller
 
         return back()->with('success', 'All notifications cleared');
     }
+
+    public function count()
+    {
+        $user = auth()->user();
+        $count = $user->notifications()->whereNull('read_at')->count();
+        return response()->json(['count' => $count]);
+    }
+
+    public function recent()
+    {
+        $user = auth()->user();
+        $notifications = $user->notifications()->latest()->take(5)->get();
+        return response()->json(['notifications' => $notifications]);
+    }
+
 }
