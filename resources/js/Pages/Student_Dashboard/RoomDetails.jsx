@@ -1,31 +1,14 @@
 // resources/js/Pages/RoomDetails.jsx
 import React from "react";
-import { Head } from "@inertiajs/react";
+import { Head, Link, usePage } from "@inertiajs/react";
 import StudentLayout from "./StudentLayout";
 
 export default function RoomDetails({ room })  {
-    const roomData = room || {
-        number: '204B',
-        building: 'North Residence',
-        floor: '2nd Floor',
-        type: 'Double Room',
-        occupants: [
-            { name: 'Sarah Johnson', role: 'Primary Occupant', email: 'sarah.j@university.edu' },
-            { name: 'Emma Wilson', role: 'Roommate', email: 'emma.w@university.edu' }
-        ],
-        amenities: [
-            'Wi-Fi Access', 'Air Conditioning', 'Study Desk',
-            'Built-in Wardrobe', 'Private Bathroom', 'Mini Refrigerator'
-        ],
-        maintenance: [
-            { issue: 'Leaky faucet', status: 'In Progress', date: '2024-08-25', priority: 'medium' },
-            { issue: 'AC not cooling', status: 'Completed', date: '2024-08-20', priority: 'high' }
-        ],
-        monthlyFee: 'R 3,200',
-        nextPaymentDue: '2024-09-01',
-        keyCard: 'Active',
-        emergencyContact: '+27 11 123 4567'
-    };
+    const { bed_number } = usePage().props;
+    const roomData = room; // Do not use fallbacks per requirements
+
+    const occupants = roomData.users;
+    const maintenance = roomData.maintenance_requests ?? roomData.maintenanceRequests;
 
     return (
         <StudentLayout>
@@ -36,7 +19,7 @@ export default function RoomDetails({ room })  {
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Room {roomData.number}</h1>
-                        <p className="text-gray-600">{roomData.building} • {roomData.floor}</p>
+                        <p className="text-gray-600">{roomData.residence.name} • Floor {roomData.floor} • Bed {bed_number}</p>
                     </div>
                     <div className="flex space-x-3">
                         <button className="px-4 py-2 border border-gray-300 bg-red-100 text-black rounded hover:bg-red-400 transition-colors">
@@ -45,6 +28,12 @@ export default function RoomDetails({ room })  {
                         <button className="px-4 py-2 border border-gray-300 bg-green-100 text-gray-700 rounded hover:bg-green-400 transition-colors">
                             Request Transfer
                         </button>
+                        <Link
+                            href={route('maintenance.index')}
+                            className="px-4 py-2 border border-gray-300 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition-colors"
+                        >
+                            Request Maintenance
+                        </Link>
                     </div>
                 </div>
             </div>
@@ -55,69 +44,50 @@ export default function RoomDetails({ room })  {
                     {/* Basic Info */}
                     <Section title="Room Information">
                         <div className="grid grid-cols-2 gap-4">
-                            <InfoItem label="Room Type" value={roomData.type} />
-                            <InfoItem label="Building" value={roomData.building} />
+                            <InfoItem label="Type" value={'Residence'} />
+                            <InfoItem label="Residence" value={roomData.residence.name} />
                             <InfoItem label="Floor" value={roomData.floor} />
-                            <InfoItem label="Key Card Status" value={roomData.keyCard} />
-                            <InfoItem label="Monthly Fee" value={roomData.monthlyFee} />
-                            <InfoItem label="Next Payment Due" value={roomData.nextPaymentDue} />
+                            <InfoItem label="Bed" value={bed_number} />
+                            <InfoItem label="Capacity" value={3} />
                         </div>
                     </Section>
 
                     {/* Roommates */}
                     <Section title="Occupants">
-                        {roomData.occupants.map((occupant, index) => (
-                            <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded">
-                                <div className="flex items-center">
-                                    <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-medium">
-                                        {occupant.name.split(' ').map(n => n[0]).join('')}
-                                    </div>
-                                    <div className="ml-3">
-                                        <p className="text-sm font-medium text-gray-900">{occupant.name}</p>
-                                        <p className="text-xs text-gray-500">{occupant.role}</p>
-                                    </div>
+                        {occupants.map((u) => (
+                            <div key={u.id} className="flex items-center justify-between p-4 border border-gray-200 rounded">
+                                <div>
+                                    <p className="text-sm font-medium text-gray-900">{u.first_name} {u.last_name}</p>
+                                    <p className="text-xs text-gray-500">{u.email}</p>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-sm text-gray-600">{occupant.email}</p>
-                                    <button className="text-xs text-indigo-600 hover:text-indigo-500">
-                                        Send Message
-                                    </button>
-                                </div>
+                                {u.contact_num && (
+                                    <span className="text-xs text-gray-600">{u.contact_num}</span>
+                                )}
                             </div>
                         ))}
                     </Section>
 
                     {/* Maintenance */}
                     <Section title="Maintenance History">
-                        {roomData.maintenance.map((item, index) => (
-                            <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded">
+                        {maintenance.map((item) => (
+                            <div key={item.id} className="flex items-center justify-between p-4 border border-gray-200 rounded">
                                 <div>
                                     <p className="text-sm font-medium text-gray-900">{item.issue}</p>
-                                    <p className="text-xs text-gray-500">Reported on {item.date}</p>
+                                    <p className="text-xs text-gray-500">Reported on {new Date(item.reported_at).toLocaleDateString()}</p>
                                 </div>
                                 <div className="text-right">
-                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                                        item.status === 'Completed' 
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-yellow-100 text-yellow-800'
-                                    }`}>
+                                    <span className="inline-flex px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
                                         {item.status}
                                     </span>
-                                    <p className={`text-xs mt-1 ${
-                                        item.priority === 'high' 
-                                            ? 'text-red-600'
-                                            : item.priority === 'medium'
-                                            ? 'text-yellow-600'
-                                            : 'text-gray-600'
-                                    }`}>
-                                        {item.priority} priority
-                                    </p>
+                                    {item.priority && (
+                                        <p className="text-xs mt-1 text-gray-600">{item.priority} priority</p>
+                                    )}
                                 </div>
                             </div>
                         ))}
-                        <button className="mt-4 text-sm text-indigo-600 hover:text-indigo-500 font-medium">
+                        <Link href={route('maintenance.index')} className="mt-4 inline-block text-sm text-indigo-600 hover:text-indigo-500 font-medium">
                             View all maintenance requests →
-                        </button>
+                        </Link>
                     </Section>
                 </div>
 
@@ -202,7 +172,7 @@ function BootstrapTest() {
                     </div>
                 </div>
             </div>
-            
+
             {/* Badge test */}
             <div className="mb-3">
                 <span className="badge bg-primary me-1">Primary</span>

@@ -31,12 +31,40 @@ class RoomController extends Controller
         $room = null;
         if ($user) {
             $room = $user->room()
-                ->with(['residence', 'users'])
+                ->with([
+                    'residence.campus',
+                    'users',
+                    'maintenanceRequests' => function ($q) {
+                        $q->orderBy('reported_at', 'desc');
+                    },
+                ])
                 ->first();
+
+            // Persist missing bed number and floor so UI never shows undefined/null
+            $changed = false;
+            if ($room) {
+                if ($room->capacity !== 3 || $room->type !== 'Residence') {
+                    $room->capacity = 3;
+                    $room->type = 'Residence';
+                    $changed = true;
+                }
+                if (is_null($room->floor)) {
+                    $room->floor = random_int(1, 3);
+                    $changed = true;
+                }
+                if ($changed) {
+                    $room->save();
+                }
+            }
+            if ($user && is_null($user->bed_number) && $room) {
+                $user->bed_number = random_int(1, 3);
+                $user->save();
+            }
         }
 
         return Inertia::render('Student_Dashboard/RoomIndex', [
             'room' => $room,
+            'bed_number' => $user?->bed_number,
         ]);
     }
 
@@ -52,8 +80,32 @@ class RoomController extends Controller
             abort(403, 'You are not authorized to view this room.');
         }
 
+        // Ensure persisted constraints
+        $changed = false;
+        if ($room->capacity !== 3 || $room->type !== 'Residence') {
+            $room->capacity = 3;
+            $room->type = 'Residence';
+            $changed = true;
+        }
+        if (is_null($room->floor)) {
+            $room->floor = random_int(1, 3);
+            $changed = true;
+        }
+        if ($changed) {
+            $room->save();
+        }
+        if ($user && is_null($user->bed_number)) {
+            $user->bed_number = random_int(1, 3);
+            $user->save();
+        }
+
+        $room->load(['residence.campus', 'users', 'maintenanceRequests' => function ($q) {
+            $q->orderBy('reported_at', 'desc');
+        }]);
+
         return Inertia::render('Student_Dashboard/RoomDetails', [
-            'room' => $room->load('residence', 'users')
+            'room' => $room,
+            'bed_number' => $user?->bed_number,
         ]);
     }
 

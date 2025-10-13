@@ -17,6 +17,10 @@ class StudentUserSeeder extends Seeder
      */
     public function run(): void
     {
+        // Constants per requirements
+        $DEFAULT_CAPACITY = 3; // capacity should always be 3
+        $DEFAULT_TYPE = 'Residence'; // type description should always display " Residence"
+
         // Create test student users
         $students = [
             [
@@ -62,61 +66,83 @@ class StudentUserSeeder extends Seeder
             }
         }
 
-        // Deterministic room assignment for students (pinned to specific residence and room numbers)
+        // Assign each named student a unique RANDOM room in the first residence
         $residence = Residence::orderBy('id')->first();
         if ($residence) {
-            // All rooms in target residence ordered by number
-            $allRooms = Room::where('residence_id', $residence->id)
-                ->orderBy('number')
-                ->get();
+            $targetEmails = ['student@example.com', 'jane@example.com', 'mike@example.com'];
+            $targetStudents = User::whereIn('email', $targetEmails)->get()->keyBy('email');
 
-            // Track rooms already used
-            $usedRoomIds = User::whereNotNull('room_id')->pluck('room_id')->toArray();
+            // Rooms in the residence that are not used by OTHER users
+            $usedByOthers = User::whereNotNull('room_id')
+                ->whereNotIn('email', $targetEmails)
+                ->pluck('room_id')
+                ->toArray();
 
-            // Pin specific rooms for our named test students if available
-            $pinMap = [
-                'student@example.com' => 101,
-                'jane@example.com'    => 102,
-                'mike@example.com'    => 103,
-            ];
+            // Only use rooms that are Available or Occupied
+            $availableRooms = Room::where('residence_id', $residence->id)
+                ->whereNotIn('id', $usedByOthers)
+                ->whereIn('status', ['Available', 'Occupied'])
+                ->pluck('id')
+                ->toArray();
 
-            foreach ($pinMap as $email => $roomNumber) {
-                $u = User::where('email', $email)->first();
-                if ($u && !$u->room_id) {
-                    $room = $allRooms->firstWhere('number', $roomNumber);
-                    if ($room && !in_array($room->id, $usedRoomIds, true)) {
-                        $u->room_id = $room->id;
-                        $u->save();
-                        $usedRoomIds[] = $room->id;
+            // Ensure we have at least 3 rooms; if not, mark additional candidate rooms as Available
+            if (count($availableRooms) < count($targetEmails)) {
+                $candidates = Room::where('residence_id', $residence->id)
+                    ->whereNotIn('id', array_merge($usedByOthers, $availableRooms))
+                    ->pluck('id')
+                    ->toArray();
+                foreach ($candidates as $cid) {
+                    if (count($availableRooms) >= count($targetEmails)) break;
+                    $r = Room::find($cid);
+                    if ($r) {
+                        $r->status = 'Available';
+                        $r->save();
+                        $availableRooms[] = $r->id;
                     }
                 }
             }
 
-            // Assign remaining Student-role users without a room to next available rooms
-            if ($studentRole) {
-                $remainingStudents = User::whereNull('room_id')
-                    ->whereHas('roles', function ($q) use ($studentRole) {
-                        $q->where('role.id', $studentRole->id);
-                    })
-                    ->whereNotIn('email', array_keys($pinMap))
-                    ->orderBy('email')
-                    ->get();
+            shuffle($availableRooms);
 
-                // Build a list of available rooms not already used
-                $availableRooms = $allRooms->reject(function ($r) use ($usedRoomIds) {
-                    return in_array($r->id, $usedRoomIds, true);
-                })->values();
+            // Ensure we have at least 3 unique rooms
+            $assignedRoomIds = [];
+            foreach ($targetEmails as $email) {
+                $u = $targetStudents->get($email);
+                if (!$u) { continue; }
 
-                $idx = 0;
-                foreach ($remainingStudents as $stu) {
-                    if (!isset($availableRooms[$idx])) {
-                        break; // no more rooms to assign
+                // Pick next unused room id
+                $roomId = null;
+                foreach ($availableRooms as $rid) {
+                    if (!in_array($rid, $assignedRoomIds, true)) {
+                        $roomId = $rid;
+                        $assignedRoomIds[] = $rid;
+                        break;
                     }
-                    $room = $availableRooms[$idx];
-                    $stu->room_id = $room->id;
-                    $stu->save();
-                    $idx++;
                 }
+                if (!$roomId) { break; }
+
+                $room = Room::find($roomId);
+                if (!$room) { continue; }
+
+                // Enforce constants and persist floor if missing
+                $changed = false;
+                if ($room->capacity !== $DEFAULT_CAPACITY || $room->type !== $DEFAULT_TYPE) {
+                    $room->capacity = $DEFAULT_CAPACITY;
+                    $room->type = $DEFAULT_TYPE;
+                    $changed = true;
+                }
+                if (is_null($room->floor)) {
+                    $room->floor = random_int(1, 3);
+                    $changed = true;
+                }
+                if ($changed) { $room->save(); }
+
+                // Assign user to room and persist a bed number if missing
+                $u->room_id = $room->id;
+                if (is_null($u->bed_number)) {
+                    $u->bed_number = random_int(1, 3);
+                }
+                $u->save();
             }
         }
 

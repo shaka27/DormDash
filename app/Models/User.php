@@ -28,6 +28,7 @@ class User extends Authenticatable
         'student_number',
         'residence_id',
         'room_id',
+    'bed_number',
         'move_in_date',
         'expected_move_out',
         'emergency_contact_name',
@@ -52,13 +53,14 @@ class User extends Authenticatable
         'password' => 'hashed',   // Laravel 10+ password hashing cast
         'move_in_date' => 'date',
         'expected_move_out' => 'date',
+          'bed_number' => 'integer',
     ];
 
     /* -------------------
        Relationships
     -------------------- */
 
-    public function groupMemberships() 
+    public function groupMemberships()
     {
         return $this->hasMany(GroupMember::class);
     }
@@ -78,17 +80,17 @@ class User extends Authenticatable
         return $this->hasMany(Message::class, 'sender_id');
     }
 
-    public function messagesReceived() 
+    public function messagesReceived()
     {
         return $this->hasMany(Message::class, 'receiver_id');
     }
 
-    public function notifications() 
+    public function notifications()
     {
         return $this->hasMany(Notification::class);
     }
 
-    public function events() 
+    public function events()
     {
         return $this->belongsToMany(Event::class, 'event_attendance')
                     ->withPivot('RSVPStatus')
@@ -115,7 +117,7 @@ class User extends Authenticatable
     {
         return $this->hasMany(MaintenanceRequest::class);
     }
-    
+
 
     // Groups  a User belongs to (via pivot)
     public function groups()
