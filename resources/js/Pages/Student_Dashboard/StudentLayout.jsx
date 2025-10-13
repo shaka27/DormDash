@@ -47,7 +47,7 @@ export default function StudentLayout({ children }) {
 
   // Extract user roles and create role checking helpers
   const userRoles = auth.user?.roles?.map(role => role.description) || [];
-  
+
   // Role checking helpers
   const hasRole = (roles) => roles.some(role => userRoles.includes(role));
   const isAdmin = hasRole(['Admin']);
@@ -66,7 +66,7 @@ export default function StudentLayout({ children }) {
       roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee'] // All roles
     },
     {
-      name: 'Rooms',
+  name: 'Room',
       href: '/rooms',
       icon: DoorClosed,
       current: url.startsWith('/rooms'),
@@ -130,15 +130,15 @@ export default function StudentLayout({ children }) {
         name: 'User Management',
         href: '/user-management',
         icon: Users,
-        current: url.startsWith('/user-management'), 
+        current: url.startsWith('/user-management'),
         roles: ['Admin']
       },
-      
+
     ] : [])
   ];
 
   // Filter navigation based on user roles
-  const visibleNavigation = navigation.filter(item => 
+  const visibleNavigation = navigation.filter(item =>
     !item.roles || hasRole(item.roles)
   );
 
@@ -170,7 +170,7 @@ export default function StudentLayout({ children }) {
         style={{ width: "250px" }}
       >
         <div className="d-flex justify-content-between align-items-center mb-4">
-           
+
           <h1 className="mb-0">
           <Hotel size={18} className="me-1" />DormDash</h1>
           <button
@@ -260,9 +260,9 @@ export default function StudentLayout({ children }) {
               )}
 
             </Link>
-                   
+
             </div>
-    
+
         </header>
 
         {/* Page content */}

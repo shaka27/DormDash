@@ -39,7 +39,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/maintenance', [MaintenanceRequestController::class, 'index'])->name('maintenance.index');
     Route::get('/maintenance/create', [MaintenanceRequestController::class, 'create'])->name('maintenance.create');
     Route::post('/maintenance', [MaintenanceRequestController::class, 'store'])->name('maintenance.store');
-    
+
     // Admin maintenance routes
     Route::get('/admin/maintenance', [MaintenanceRequestController::class, 'adminIndex'])->name('admin.maintenance.index');
     Route::patch('/admin/maintenance/{maintenanceRequest}', [MaintenanceRequestController::class, 'update'])->name('admin.maintenance.update');
@@ -49,7 +49,7 @@ Route::middleware('auth')->group(function () {
         // Student Dashboard – pass the authenticated user to the page
         Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
 
-        Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'index'])->name('rooms.index');
+    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'studentIndex'])->name('rooms.index');
         Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
         Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');

@@ -10,8 +10,9 @@ return new class extends Migration
     {
         Schema::create('maintenance_requests', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('room_id')->constrained()->onDelete('cascade');
+            // Explicitly constrain to existing table names to avoid default pluralization mismatches
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('room_id')->constrained('room')->onDelete('cascade');
             $table->string('issue');
             $table->text('description')->nullable();
             $table->enum('status', ['pending', 'in-progress', 'completed'])->default('pending');
