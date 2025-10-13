@@ -46,8 +46,12 @@ Route::middleware('guest')->group(function () {
 // Authenticated Routes
 // -------------------------------------------------
 Route::middleware('auth')->group(function () {
-    // Logout
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    // ADMIN RESIDENCE OVERVIEW (FOR SELECTION)
+    Route::get('/residence-overview', [ResidenceController::class, 'overview'])
+        ->name('residence.overview');
+
+    Route::post('/residence/select', [ResidenceController::class, 'select'])
+        ->name('residence.select');
 
     // Admin Notifications Page
     Route::get('/admin/notifications', function () {
@@ -68,6 +72,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('notifications/{notification}', [NotificationController::class, 'destroy'])
             ->name('admin.notifications.destroy');
     });
+    // Logout
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     // Student Notification API Routes
     Route::prefix('api')->group(function () {
@@ -90,7 +96,6 @@ Route::middleware('auth')->group(function () {
 
     // Routes Requiring Residence Selection
     Route::middleware('residence.selected')->group(function () {
-
         // Student Dashboard
         Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
 
@@ -114,7 +119,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/events/{event}/event-details', [EventController::class, 'getEventDetailsPage'])->name('events.details');
 
         // Misc Student Pages
-        Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
+        Route::get('/StudentLayout', fn () => Inertia::render('Student_Dashboard/StudentLayout'));
         Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
 
         // Profile
@@ -139,4 +144,5 @@ Route::middleware('auth')->group(function () {
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 });
+
 
