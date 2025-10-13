@@ -1,34 +1,23 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
-use Inertia\Inertia;
-
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\MessageController;
-use App\Http\Controllers\MaintenanceRequestController;
-use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ResidenceController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidenceManagementController;
+use Inertia\Inertia;
 
-// -------------------------------------------------
-// Root redirect: Send users to login if guest, else dashboard
-// -------------------------------------------------
-Route::get('/', function () {
-    return auth()->check()
-        ? redirect('/StudentDashboard')
-        : redirect()->route('login');
-});
+use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
-// -------------------------------------------------
-// Guest Routes (Login / Register)
-// -------------------------------------------------
+// Sanctum CSRF cookie endpoint (for SPA auth)
+Route::get('/sanctum/csrf-cookie', [\Laravel\Sanctum\Http\Controllers\CsrfCookieController::class, 'show'])->name('sanctum.csrf-cookie');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return auth()->check()
