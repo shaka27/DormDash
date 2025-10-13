@@ -85,6 +85,8 @@ Route::middleware('auth')->group(function () {
         Route::get('notifications/count', [NotificationController::class, 'count'])->name('api.notifications.count');
         Route::get('notifications/recent', [NotificationController::class, 'recent'])->name('api.notifications.recent');
         Route::post('notifications/{notification}/read', [NotificationController::class, 'markAsRead'])->name('api.notifications.read');
+        Route::delete('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('notifications.clearAll');
+
     });
 
     // All residence-specific routes - require residence to be selected for admins

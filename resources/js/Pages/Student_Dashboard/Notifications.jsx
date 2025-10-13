@@ -1,81 +1,147 @@
-// resources/js/Pages/Notifications.jsx
-import React, { useEffect, useState } from "react";
-import { Head } from "@inertiajs/react";
+import React, { useState } from "react";
+import { router, usePage } from "@inertiajs/react";
 
-/**
- * Student notifications page.
- * Expects `notifications` and `user` to be passed via Inertia props from NotificationController@index.
- * Falls back to an API fetch if not provided.
- */
-export default function Notifications({ notifications: initialNotifications = [], user }) {
-  const [notificationsData, setNotificationsData] = useState(initialNotifications || []);
-  const [loading, setLoading] = useState(false);
+export default function Notifications({ notifications = [], user, canManage }) {
+  const { flash } = usePage().props;
+  const [notificationsData, setNotificationsData] = useState(notifications);
+  const unreadCount = notificationsData.filter((n) => !n.is_read).length;
 
-  useEffect(() => {
-    if (!initialNotifications || initialNotifications.length === 0) {
-      // try to fetch recent notifications for the user's residence
-      (async () => {
-        setLoading(true);
-        try {
-          const res = await fetch('/api/notifications/recent', { credentials: 'include' });
-          if (res.ok) {
-            const json = await res.json();
-            setNotificationsData(json.notifications ?? json ?? []);
-          } else {
-            console.warn('Failed fetching recent notifications', res.status);
-            setNotificationsData([]);
-          }
-        } catch (err) {
-          console.error(err);
-          setNotificationsData([]);
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }
-  }, []);
+  const markAsRead = (id) => {
+    router.patch(
+      route("notifications.markAsRead", id),
+      {},
+      {
+        preserveScroll: true,
+        onSuccess: () => {
+          setNotificationsData((prev) =>
+            prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+          );
+        },
+      }
+    );
+  };
 
-  const getNotificationIcon = (type) => {
-    switch (type) {
-      case "reminder": return "⏰";
-      case "maintenance": return "🔧";
-      case "announcement": return "📢";
-      case "technical": return "💻";
-      default: return "🔔";
+  const deleteNotification = (id) => {
+    if (confirm("Are you sure you want to delete this notification?")) {
+      router.delete(route("notifications.destroy", id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          setNotificationsData((prev) => prev.filter((n) => n.id !== id));
+        },
+        onError: () => {
+          alert("Failed to delete notification");
+        },
+      });
     }
   };
 
-  const getNotificationColor = (type) => {
-    switch (type) {
-      case "reminder": return "border-l-yellow-400";
-      case "maintenance": return "border-l-orange-400";
-      case "announcement": return "border-l-blue-400";
-      case "technical": return "border-l-purple-400";
-      default: return "border-l-gray-400";
+  const clearAllNotifications = () => {
+    if (notificationsData.length === 0) {
+      alert("No notifications to clear.");
+      return;
+    }
+
+    if (confirm("Are you sure you want to clear all notifications?")) {
+      router.delete(route("notifications.clearAll"), {
+        preserveScroll: true,
+        onSuccess: () => {
+          setNotificationsData([]);
+        },
+        onError: () => {
+          alert("Failed to clear all notifications");
+        },
+      });
     }
   };
 
   return (
-    <>
-      <Head title="Notifications" />
-      <div className="p-6">
-        <h1 className="text-2xl font-bold mb-4">Notifications</h1>
-        {loading && <div>Loading...</div>}
-        {!loading && notificationsData.length === 0 && <div className="text-gray-500">No notifications</div>}
-        <div className="space-y-4">
-          {notificationsData.map(n => (
-            <div key={n.id} className={`p-4 border rounded bg-white border-l-4 ${getNotificationColor(n.type)}`}>
-              <div className="flex justify-between">
-                <div>
-                  <div className="font-semibold">{n.type?.charAt(0).toUpperCase() + n.type?.slice(1)} from {n.sender?.name ?? 'System'}</div>
-                  <div className="text-sm text-gray-600">{n.content}</div>
-                </div>
-                <div className="text-sm text-gray-500">{n.created_at ? new Date(n.created_at).toLocaleString() : ''}</div>
-              </div>
-            </div>
-          ))}
+    <div className="p-6 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          Notifications
+        </h1>
+        <div className="flex items-center gap-3">
+          {/* Unread count badge */}
+          <div className="bg-red-600 text-white rounded-full px-3 py-1 text-sm font-semibold">
+            {unreadCount} Unread
+          </div>
+
+          {/* Clear All button */}
+          <button
+            onClick={clearAllNotifications}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+          >
+            Clear All
+          </button>
+
+          {/* Create button (only if admin/houseparent) */}
+          {canManage && (
+            <button
+              onClick={() => router.visit(route("notifications.create"))}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            >
+              Create Notification
+            </button>
+          )}
         </div>
       </div>
-    </>
+
+      {flash.success && (
+        <div className="mb-4 text-green-600 font-semibold">{flash.success}</div>
+      )}
+      {flash.error && (
+        <div className="mb-4 text-red-600 font-semibold">{flash.error}</div>
+      )}
+
+      {notificationsData.length === 0 ? (
+        <div className="text-gray-500 text-center py-10">
+          No notifications found.
+        </div>
+      ) : (
+        <ul className="space-y-4">
+          {notificationsData.map((notification) => (
+            <li
+              key={notification.id}
+              className={`p-4 rounded-lg shadow-md transition ${
+                notification.is_read
+                  ? "bg-gray-100 dark:bg-gray-800"
+                  : "bg-blue-50 dark:bg-gray-700"
+              }`}
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    {notification.type}
+                  </h3>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {notification.content}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Sent by {notification.sender?.name || "Unknown"} •{" "}
+                    {new Date(notification.created_at).toLocaleString()}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  {!notification.is_read && (
+                    <button
+                      onClick={() => markAsRead(notification.id)}
+                      className="text-green-600 hover:text-green-800 font-semibold"
+                    >
+                      Mark as Read
+                    </button>
+                  )}
+                  <button
+                    onClick={() => deleteNotification(notification.id)}
+                    className="text-red-600 hover:text-red-800 font-semibold"
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

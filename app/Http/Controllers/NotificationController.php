@@ -20,25 +20,21 @@ class NotificationController extends Controller
     /**
      * Student view: show notifications for the user's residence.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $user = $request->user();
-        $residenceId = $user->residence_id ?? session('selected_residence_id') ?? null;
+        $user = auth()->user();
 
-        $notifications = collect();
-        if ($residenceId) {
-            $notifications = Notification::where('residence_id', $residenceId)
-                ->orderByDesc('created_at')
-                ->get();
-        }
+        $notifications = Notification::where(function ($q) use ($user) {
+                $q->where('residence_id', $user->residence_id);
+            })
+            ->with('sender')
+            ->orderByDesc('created_at')
+            ->get();
 
-        // pass canManage flag for UI (admins who have selected a residence)
-        $canManage = $this->userIsAdmin() && ($user->residence_id || session('selected_residence_id'));
-
-        return Inertia::render('Student_Dashboard/Notifications', [
+        return Inertia::render('Notifications', [
             'notifications' => $notifications,
             'user' => $user,
-            'canManage' => $canManage,
+            'canManage' => $user->can('manage notifications'), // or whatever permission you use
         ]);
     }
 
@@ -61,27 +57,33 @@ class NotificationController extends Controller
     /**
      * Admin: create a notification for a residence.
      */
-    public function store(Request $request, $residenceId)
-    {
-        if (! $this->userIsAdmin()) {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
+    public function store(Request $request)
+{
+    $request->validate([
+        'type' => 'required|string',
+        'content' => 'required|string',
+        'residence_id' => 'required|exists:residences,id',
+    ]);
 
-        $data = $request->validate([
-            'type' => 'required|string|max:64',
-            'content' => 'required|string',
-        ]);
+    $notification = Notification::create([
+        'type' => $request->type,
+        'content' => $request->content,
+        'sender_id' => auth()->id(),
+        'residence_id' => $request->residence_id,
+    ]);
 
-        $notification = Notification::create([
-            'type' => $data['type'],
-            'content' => $data['content'],
-            'residence_id' => (int) $residenceId,
-            'sender_id' => $request->user()->id,
-        ]);
+    // Get all students in the residence
+    $students = User::whereHas('roles', fn($q) => $q->where('description', 'Student'))
+        ->where('residence_id', $request->residence_id)
+        ->get();
 
-        // return created notification
-        return response()->json(['notification' => $notification], 201);
+    // Attach notification to each student
+    foreach ($students as $student) {
+        $student->notifications()->attach($notification->id, ['is_read' => false]);
     }
+
+    return back()->with('success', 'Notification broadcast to residence');
+}
 
     /**
      * Admin: update a notification (content/type).
@@ -114,5 +116,15 @@ class NotificationController extends Controller
         $notification->delete();
 
         return response()->json(['message' => 'Deleted']);
+    }
+
+    public function clearAll()
+    {
+        $user = auth()->user();
+
+        // Assuming a many-to-many pivot between users and notifications
+        $user->notifications()->detach();
+
+        return back()->with('success', 'All notifications cleared');
     }
 }

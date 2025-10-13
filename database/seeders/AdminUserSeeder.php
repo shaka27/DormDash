@@ -15,17 +15,17 @@ class AdminUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create admin user
+        // Create admin user (idempotent)
+        $adminEmail = '12ajmostert12@gmail.com';
         $admin = User::firstOrCreate(
-            ['email' => 'rikus.swart@greenbit.dev'],
+            ['email' => $adminEmail],
             [
                 'first_name' => 'AJ',
                 'last_name' => 'Mostert',
-                'email' => '12ajmostert12@gmail.com',
                 'contact_num' => '0634109673',
                 'password' => Hash::make('admin1234'),
                 'gender' => 'male',
-                'student_number'=>'49351893'
+                'student_number' => '49351893',
             ]
         );
         

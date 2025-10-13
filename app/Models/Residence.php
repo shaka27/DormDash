@@ -29,4 +29,10 @@ class Residence extends Model
     {
         return $this->hasMany(User::class, 'residence_id');
     }
+
+    // ADD THIS METHOD for maintenance requests
+    public function maintenanceRequests()
+    {
+        return $this->hasManyThrough(MaintenanceRequest::class, Room::class, 'residence_id', 'room_id');
+    }
 }

@@ -14,8 +14,30 @@ class RoomController extends Controller
      */
     public function index(Request $request)
     {
+        // Keep original behavior for non-student/API contexts
         $rooms = Room::with('residence', 'users')->get();
         return Inertia::render('Student_Dashboard/RoomIndex', ['rooms' => $rooms]);
+    }
+
+    /**
+     * Student-facing Rooms page: only the authenticated user's assigned room
+     */
+    public function studentIndex(Request $request)
+    {
+        $user = $request->user();
+
+        // If the signed-in user has an assigned room, only show that room on the student dashboard.
+        // Use the relationship to avoid any table/column naming mismatch.
+        $room = null;
+        if ($user) {
+            $room = $user->room()
+                ->with(['residence', 'users'])
+                ->first();
+        }
+
+        return Inertia::render('Student_Dashboard/RoomIndex', [
+            'room' => $room,
+        ]);
     }
 
     /**
@@ -23,7 +45,16 @@ class RoomController extends Controller
      */
     public function getRoomDetailsPage(Request $request, Room $room)
     {
-        return Inertia::render('Student_Dashboard/RoomDetails', ['room' => $room->load('residence', 'users')]);
+        $user = $request->user();
+
+        // If the user has an assigned room, prevent access to other rooms' detail pages
+        if ($user && $user->room_id && (int)$user->room_id !== (int)$room->id) {
+            abort(403, 'You are not authorized to view this room.');
+        }
+
+        return Inertia::render('Student_Dashboard/RoomDetails', [
+            'room' => $room->load('residence', 'users')
+        ]);
     }
 
     /**

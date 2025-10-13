@@ -18,6 +18,8 @@ class MaintenanceRequest extends Model
         'priority',
         'reported_at',
         'completed_at',
+        'assigned_staff',
+        'staff_notes',
     ];
 
     protected $casts = [
