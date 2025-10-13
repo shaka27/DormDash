@@ -117,6 +117,8 @@
     "include": [
         "resources/js/**/*.ts",
         "resources/js/**/*.d.ts",
-        "resources/js/**/*.tsx", "resources/js/pages/Student_Dashboard/StudentDashboard.jsx",
+        "resources/js/**/*.tsx",
+        "resources/js/pages/Student_Dashboard/StudentDashboard.jsx"
     ]
 }
+

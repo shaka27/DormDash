@@ -28,6 +28,7 @@ class AdminUserSeeder extends Seeder
                 'student_number'=>'49351893'
             ]
         );
+        
 
         // Attach Admin role
         $adminRole = Role::where('description', 'Admin')->first();

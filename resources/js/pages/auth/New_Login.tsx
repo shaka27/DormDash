@@ -1,5 +1,5 @@
-import React, { ChangeEvent, FormEvent, useEffect } from "react";
-import { Head, useForm } from "@inertiajs/react";
+import React, { ChangeEvent, FormEvent } from 'react';
+import { Head, useForm } from '@inertiajs/react';
 
 interface LoginFormValues {
   email: string;

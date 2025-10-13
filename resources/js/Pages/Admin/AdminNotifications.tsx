@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
 import {
   Users,
   Building,
@@ -86,6 +85,16 @@ interface Application {
   notes?: string;
 }
 
+// **NEW**: Notification Interface
+interface Notification {
+  id: string;
+  dormitoryId: string;
+  dormitoryName: string;
+  title: string;
+  message: string;
+  timestamp: string;
+}
+
 interface DashboardStats {
   totalStudents: number;
   totalDorms: number;
@@ -95,22 +104,19 @@ interface DashboardStats {
   availableRooms: number;
 }
 
-interface NotificationItem {
-  id: number | string;
-  type: string;
-  content: string;
-  residence_id?: number | null;
-  sender?: { id?: number; name?: string } | null;
-  created_at?: string;
-  is_read?: boolean;
-}
-
 const DormDash: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('dashboard');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedCampus, setSelectedCampus] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [loading, setLoading] = useState(false);
+
+  // **NEW**: State for notification modal and data
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [notificationTitle, setNotificationTitle] = useState<string>('');
+  const [notificationMessage, setNotificationMessage] = useState<string>('');
+  const [selectedDormId, setSelectedDormId] = useState<string | null>(null);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [stats, setStats] = useState<DashboardStats>({
     totalStudents: 0,
@@ -124,10 +130,6 @@ const DormDash: React.FC = () => {
   const [students, setStudents] = useState<Student[]>([]);
   const [dormitories, setDormitories] = useState<Dormitory[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [editingNotification, setEditingNotification] = useState<NotificationItem | null>(null);
-  const [editContent, setEditContent] = useState<string>('');
-  const [editType, setEditType] = useState<string>('announcement');
 
   // Fetch stats
   useEffect(() => {
@@ -188,18 +190,52 @@ const DormDash: React.FC = () => {
     fetchApplications();
   }, []);
 
-  // Fetch notifications (admin)
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await axios.get('/admin/notifications'); // adjust path if different
-        setNotifications(res.data.notifications ?? res.data ?? []);
-      } catch (err) {
-        console.error('Error fetching notifications:', err);
-      }
+  // **NEW**: Handlers for Notification Modal
+  const handleOpenModal = (dormId: string) => {
+    setSelectedDormId(dormId);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setNotificationTitle('');
+    setNotificationMessage('');
+    setSelectedDormId(null);
+  };
+
+  const handleSendNotification = () => {
+    if (!notificationTitle.trim() || !notificationMessage.trim() || !selectedDormId) {
+      alert("Please fill in both title and message.");
+      return;
+    }
+
+    const dorm = dormitories.find(d => d.id === selectedDormId);
+    if (!dorm) return;
+
+    const newNotification: Notification = {
+      id: `${new Date().getTime()}`, // Use a more robust ID in production
+      dormitoryId: selectedDormId,
+      dormitoryName: dorm.name,
+      title: notificationTitle,
+      message: notificationMessage,
+      timestamp: new Date().toISOString(),
     };
-    fetchNotifications();
-  }, []);
+
+    // **TODO**: In a real application, you would send this to your backend API
+    // await fetch(`/api/residences/${selectedDormId}/broadcast`, { 
+    //   method: 'POST', 
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(newNotification) 
+    // });
+    
+    // Add to local state to display in admin panel
+    setNotifications(prev => [newNotification, ...prev]);
+    console.log("Broadcasting notification:", newNotification);
+
+    alert(`Notification sent to ${dorm.name}!`);
+    handleCloseModal();
+  };
+
 
   // Function to update application status
   const updateApplicationStatus = async (id: string, status: string) => {
@@ -221,41 +257,6 @@ const DormDash: React.FC = () => {
       }
     } catch (error) {
       console.error('Error updating application:', error);
-    }
-  };
-
-  const openEditNotification = (n: NotificationItem) => {
-    setEditingNotification(n);
-    setEditContent(n.content ?? '');
-    setEditType(n.type ?? 'announcement');
-  };
-
-  const updateNotification = async () => {
-    if (!editingNotification) return;
-    try {
-      const payload = { type: editType, content: editContent };
-      const res = await axios.put(`/admin/notifications/${editingNotification.id}`, payload, {
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' }
-      });
-      const updated = res.data.notification ?? res.data;
-      setNotifications(prev => prev.map(p => (p.id === updated.id ? updated : p)));
-      setEditingNotification(null);
-    } catch (err) {
-      console.error('Failed to update notification', err);
-      alert('Failed to update notification');
-    }
-  };
-
-  const deleteNotification = async (id: number | string) => {
-    if (!confirm('Delete this notification?')) return;
-    try {
-      await axios.delete(`/admin/notifications/${id}`, {
-        headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' }
-      });
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    } catch (err) {
-      console.error('Failed to delete notification', err);
-      alert('Failed to delete notification');
     }
   };
 
@@ -298,7 +299,7 @@ const DormDash: React.FC = () => {
   const TabButton: React.FC<{ id: string; label: string; icon: React.ReactNode }> = ({ id, label, icon }) => (
     <button
       onClick={() => setActiveTab(id)}
-      className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+      className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors w-full text-left ${
         activeTab === id
           ? 'bg-purple-600 text-white'
           : 'text-gray-600 hover:bg-gray-100'
@@ -381,9 +382,6 @@ const DormDash: React.FC = () => {
                       style={{ width: `${(dorm.occupiedRooms / dorm.totalRooms) * 100}%` }}
                     ></div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {((dorm.occupiedRooms / dorm.totalRooms) * 100).toFixed(1)}%
-                  </p>
                 </div>
               ))}
             </div>
@@ -397,20 +395,6 @@ const DormDash: React.FC = () => {
 
   const renderStudentManagement = () => (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-      {loading ? (
-        <div className="py-8 text-center">
-          <p className="text-gray-500">Loading students...</p>
-        </div>
-      ) : students.length > 0 ? (
-        <table className="min-w-full">
-          {/* ... table content ... */}
-        </table>
-      ) : (
-        <p className="py-8 text-center text-gray-500">No students found.</p>
-      )}
-      </div>
-
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Student Management</h2>
         <div className="flex space-x-2">
@@ -426,13 +410,7 @@ const DormDash: React.FC = () => {
           </div>
           <select className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
             <option value="all">All Faculties</option>
-            <option value="engineering">Engineering</option>
-            <option value="commerce">Commerce</option>
-            <option value="humanities">Humanities</option>
-            <option value="fnas">Natural&AgriculuralSciences</option>
-            <option value="education">Education</option>
-            <option value="humanities">Humanities</option>
-            <option value="ems">EMS</option>
+            {/* ... other options ... */}
           </select>
           <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
             Import Students
@@ -440,9 +418,11 @@ const DormDash: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-        {students.length > 0 ? (
-          <table className="min-w-full">
+      <div className="bg-white rounded-lg shadow-sm border overflow-x-auto">
+      {loading ? (
+        <div className="py-8 text-center"><p className="text-gray-500">Loading students...</p></div>
+      ) : students.length > 0 ? (
+        <table className="min-w-full">
             <thead className="bg-purple-50">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
@@ -488,10 +468,10 @@ const DormDash: React.FC = () => {
                 </tr>
               ))}
             </tbody>
-          </table>
-        ) : (
-          <p className="py-8 text-center text-gray-500">No students found.</p>
-        )}
+        </table>
+      ) : (
+        <p className="py-8 text-center text-gray-500">No students found.</p>
+      )}
       </div>
     </div>
   );
@@ -520,7 +500,7 @@ const DormDash: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {dormitories.length > 0 ? (
           dormitories.map((dorm: Dormitory) => (
-            <div key={dorm.id} className="bg-white rounded-lg shadow-sm border p-6">
+            <div key={dorm.id} className="bg-white rounded-lg shadow-sm border p-6 flex flex-col">
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="text-lg font-semibold">{dorm.name}</h3>
@@ -532,22 +512,10 @@ const DormDash: React.FC = () => {
               </div>
 
               <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Type:</span>
-                  <span className="text-sm font-medium capitalize">{dorm.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Rooms:</span>
-                  <span className="text-sm font-medium">{dorm.occupiedRooms}/{dorm.totalRooms}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Beds:</span>
-                  <span className="text-sm font-medium">{dorm.occupiedBeds}/{dorm.totalBeds}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Price:</span>
-                  <span className="text-sm font-medium">R{dorm.pricePerSemester.toLocaleString()}/semester</span>
-                </div>
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Type:</span><span className="text-sm font-medium capitalize">{dorm.type}</span></div>
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Rooms:</span><span className="text-sm font-medium">{dorm.occupiedRooms}/{dorm.totalRooms}</span></div>
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Beds:</span><span className="text-sm font-medium">{dorm.occupiedBeds}/{dorm.totalBeds}</span></div>
+                <div className="flex justify-between"><span className="text-sm text-gray-600">Price:</span><span className="text-sm font-medium">R{dorm.pricePerSemester.toLocaleString()}/semester</span></div>
               </div>
 
               <div className="mt-4">
@@ -558,19 +526,54 @@ const DormDash: React.FC = () => {
                     style={{ width: `${(dorm.occupiedRooms / dorm.totalRooms) * 100}%` }}
                   ></div>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {((dorm.occupiedRooms / dorm.totalRooms) * 100).toFixed(1)}%
-                </p>
+                <p className="text-xs text-gray-500 mt-1">{((dorm.occupiedRooms / dorm.totalRooms) * 100).toFixed(1)}%</p>
               </div>
 
-              <div className="mt-4 flex justify-between">
-                <button className="text-purple-600 hover:text-purple-800 text-sm font-medium">View Details</button>
+              {/* **MODIFIED**: Added Broadcast button */}
+              <div className="mt-6 pt-4 border-t flex-grow flex items-end justify-between">
                 <button className="text-purple-600 hover:text-purple-800 text-sm font-medium">Manage Rooms</button>
+                <button 
+                  onClick={() => handleOpenModal(dorm.id)}
+                  className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 text-sm font-medium"
+                >
+                  <MessageSquare size={14} />
+                  Broadcast
+                </button>
               </div>
             </div>
           ))
         ) : (
           <p className="col-span-full text-center text-gray-500">No dormitories found.</p>
+        )}
+      </div>
+    </div>
+  );
+  
+  // **NEW**: Render function for Notifications Tab
+  const renderNotifications = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Broadcast History</h2>
+      </div>
+      <div className="bg-white rounded-lg shadow-sm border p-6 space-y-4">
+        {notifications.length > 0 ? (
+          notifications.map(notif => (
+            <div key={notif.id} className="border p-4 rounded-lg bg-gray-50">
+              <div className="flex justify-between items-center mb-2">
+                  <div>
+                      <h3 className="font-bold text-lg text-gray-800">{notif.title}</h3>
+                      <p className="text-sm font-medium text-purple-700">Sent to: {notif.dormitoryName}</p>
+                  </div>
+                  <span className="text-xs text-gray-500">{new Date(notif.timestamp).toLocaleString()}</span>
+              </div>
+              <p className="text-gray-700 mt-2">{notif.message}</p>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <Bell size={48} className="mx-auto text-gray-300" />
+            <p className="mt-4 text-gray-500">No notifications have been sent yet.</p>
+          </div>
         )}
       </div>
     </div>
@@ -608,7 +611,7 @@ const DormDash: React.FC = () => {
           </button>
         </div>
       </div>
-      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+      <div className="bg-white rounded-lg shadow-sm border overflow-x-auto">
         {applications.length > 0 ? (
           <table className="min-w-full">
             <thead className="bg-purple-50">
@@ -678,64 +681,6 @@ const DormDash: React.FC = () => {
     </div>
   );
 
-  const renderNotificationsAdmin = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Notifications</h2>
-        <div className="text-sm text-gray-500">{notifications.length} total</div>
-      </div>
-
-      <div className="space-y-3">
-        {notifications.length === 0 && <p className="text-gray-500">No notifications.</p>}
-        {notifications.map(n => (
-          <div key={n.id} className="bg-white p-4 rounded shadow-sm flex items-start justify-between">
-            <div>
-              <div className="text-sm text-gray-500">{n.created_at ? new Date(n.created_at).toLocaleString() : ''}</div>
-              <div className="font-medium">{n.type}</div>
-              <div className="text-gray-700">{n.content}</div>
-            </div>
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => openEditNotification(n)}
-                className="px-3 py-1 bg-yellow-500 text-white rounded text-sm"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => deleteNotification(n.id)}
-                className="px-3 py-1 bg-red-600 text-white rounded text-sm"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Edit modal */}
-      {editingNotification && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-xl w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">Edit Notification</h3>
-            <div className="space-y-3">
-              <select value={editType} onChange={e => setEditType(e.target.value)} className="w-full px-3 py-2 border rounded">
-                <option value="announcement">Announcement</option>
-                <option value="reminder">Reminder</option>
-                <option value="maintenance">Maintenance</option>
-                <option value="technical">Technical</option>
-              </select>
-              <textarea value={editContent} onChange={e => setEditContent(e.target.value)} className="w-full p-3 border rounded" rows={5} />
-            </div>
-            <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setEditingNotification(null)} className="px-4 py-2 border rounded">Cancel</button>
-              <button onClick={updateNotification} className="px-4 py-2 bg-yellow-600 text-white rounded">Save</button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
   const renderView = () => {
     switch (activeTab) {
       case 'dashboard':
@@ -744,10 +689,11 @@ const DormDash: React.FC = () => {
         return renderStudentManagement();
       case 'dormitories':
         return renderDormitoryManagement();
-      case 'notifications':
-        return renderNotificationsAdmin();
       case 'applications':
         return renderApplications();
+      // **NEW**: Case for notifications tab
+      case 'notifications':
+        return renderNotifications();
       default:
         return renderDashboard();
     }
@@ -755,6 +701,42 @@ const DormDash: React.FC = () => {
 
   return (
     <div className="font-sans antialiased text-gray-900 bg-gray-50 min-h-screen">
+      
+      {/* **NEW**: Notification Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 transition-opacity">
+          <div className="bg-white p-8 rounded-lg shadow-2xl w-full max-w-md m-4">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">
+              Broadcast to {dormitories.find(d => d.id === selectedDormId)?.name}
+            </h2>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Notification Title"
+                value={notificationTitle}
+                onChange={(e) => setNotificationTitle(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+              <textarea
+                placeholder="Enter your message for the residents..."
+                value={notificationMessage}
+                onChange={(e) => setNotificationMessage(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                rows={5}
+              />
+            </div>
+            <div className="flex justify-end space-x-4 mt-6">
+              <button onClick={handleCloseModal} className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">
+                Cancel
+              </button>
+              <button onClick={handleSendNotification} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                Send Notification
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row">
         {/* Sidebar */}
         <aside className="bg-white border-r p-4 md:w-64 min-h-screen">
@@ -770,6 +752,7 @@ const DormDash: React.FC = () => {
             <TabButton id="students" label="Students" icon={<Users size={20} />} />
             <TabButton id="dormitories" label="Dormitories" icon={<Building size={20} />} />
             <TabButton id="applications" label="Applications" icon={<Calendar size={20} />} />
+            {/* **NEW**: Notifications Tab button */}
             <TabButton id="notifications" label="Notifications" icon={<Bell size={20} />} />
           </nav>
         </aside>
@@ -779,8 +762,10 @@ const DormDash: React.FC = () => {
           <header className="flex flex-col sm:flex-row justify-between items-center mb-6">
             <h1 className="text-3xl font-bold text-gray-800">Welcome, Admin</h1>
             <div className="mt-4 sm:mt-0 flex items-center space-x-4">
-              <button className="text-gray-600 hover:text-purple-600">
+              <button className="text-gray-600 hover:text-purple-600 relative">
                 <Bell size={24} />
+                {/* Optional: Add a badge for new notifications */}
+                {notifications.length > 0 && <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>}
               </button>
               <button className="text-gray-600 hover:text-purple-600">
                 <MessageSquare size={24} />

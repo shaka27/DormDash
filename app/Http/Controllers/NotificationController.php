@@ -3,233 +3,116 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
-use App\Models\User;
-use App\Models\Residence;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
-    /**
-     * Check if user can manage notifications (Admin, HouseParent, or HouseCommittee).
-     */
-    private function canManageNotifications()
+    protected function userIsAdmin()
     {
         $user = Auth::user();
-        $userRoles = $user->roles->pluck('description')->toArray();
-
-        return in_array('Admin', $userRoles) ||
-               in_array('HouseParent', $userRoles) ||
-               in_array('HouseCommittee', $userRoles);
+        if (! $user) return false;
+        // adjust to your role implementation; this checks Role.description == 'Admin'
+        return $user->roles->pluck('description')->contains('Admin');
     }
 
     /**
-     * List all notifications for the authenticated user.
+     * Student view: show notifications for the user's residence.
      */
     public function index(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
+        $residenceId = $user->residence_id ?? session('selected_residence_id') ?? null;
 
-        // Get residence ID from session (for admins) or user's residence_id (for students)
-        $residenceId = $request->session()->get('selected_residence_id', $user->residence_id);
-
-        // Get notifications where the user is the recipient and matches the current residence context
-        $notifications = Notification::with(['sender', 'residence'])
-            ->where('recipient_id', $user->id)
-            ->when($residenceId, function ($query) use ($residenceId) {
-                return $query->where('residence_id', $residenceId);
-            })
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($notification) {
-                return [
-                    'id' => $notification->id,
-                    'type' => $notification->type,
-                    'content' => $notification->content,
-                    'is_read' => (bool) $notification->is_read,
-                    'created_at' => $notification->created_at->format('Y-m-d H:i:s'),
-                    'sender' => [
-                        'id' => $notification->sender->id,
-                        'name' => $notification->sender->name,
-                    ],
-                    'residence_id' => $notification->residence_id,
-                ];
-            });
-        
-        if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json($notifications);
+        $notifications = collect();
+        if ($residenceId) {
+            $notifications = Notification::where('residence_id', $residenceId)
+                ->orderByDesc('created_at')
+                ->get();
         }
+
+        // pass canManage flag for UI (admins who have selected a residence)
+        $canManage = $this->userIsAdmin() && ($user->residence_id || session('selected_residence_id'));
 
         return Inertia::render('Student_Dashboard/Notifications', [
             'notifications' => $notifications,
-            'canManage' => $this->canManageNotifications(),
             'user' => $user,
+            'canManage' => $canManage,
         ]);
     }
 
     /**
-     * Create a notification.
-     * Always broadcasts to all users in the authenticated user's residence.
-     * Only accessible to Admin, HouseParent, and HouseCommittee.
+     * Admin: list notifications for a residence (JSON).
      */
-    public function store(Request $request)
+    public function adminIndex($residenceId)
     {
-        if (!$this->canManageNotifications()) {
-            // For web routes (Inertia), redirect back with error
-            if ($request->wantsJson()) {
-                return response()->json(['error' => 'Unauthorized. Only Admin, HouseParent, and HouseCommittee can create notifications.'], 403);
-            }
-            return back()->withErrors(['error' => 'Unauthorized. Only Admin, HouseParent, and HouseCommittee can create notifications.']);
+        if (! $this->userIsAdmin()) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        $request->validate([
-            'type' => 'required|string|max:255',
+        $notifications = Notification::where('residence_id', $residenceId)
+            ->orderByDesc('created_at')
+            ->get();
+
+        return response()->json(['notifications' => $notifications]);
+    }
+
+    /**
+     * Admin: create a notification for a residence.
+     */
+    public function store(Request $request, $residenceId)
+    {
+        if (! $this->userIsAdmin()) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $data = $request->validate([
+            'type' => 'required|string|max:64',
             'content' => 'required|string',
         ]);
 
-        $user = Auth::user();
-
-        // Get residence ID from session (for admins) or user's residence_id (for students)
-        $residenceId = $request->session()->get('selected_residence_id', $user->residence_id);
-
-        if (!$residenceId) {
-            if ($request->wantsJson()) {
-                return response()->json(['error' => 'No residence selected. Please select a residence first.'], 422);
-            }
-            return back()->withErrors(['error' => 'No residence selected. Please select a residence first.']);
-        }
-
-        // Broadcast to all users in the residence
-        $residence = Residence::with('users')->findOrFail($residenceId);
-        $notificationCount = 0;
-
-
-        foreach ($residence->users as $recipient) {
-            Notification::create([
-                'type' => $request->type,
-                'content' => $request->content,
-                'is_read' => false,
-                'user_id' => $user->id,
-                'recipient_id' => $recipient->id,
-                'residence_id' => $residence->id,
-            ]);
-            $notificationCount++;
-        }
-
-        // For web routes (Inertia), redirect back with success message
-        if ($request->wantsJson()) {
-            return response()->json([
-                'message' => 'Notification broadcasted to all users in residence',
-                'count' => $notificationCount,
-            ], 201);
-        }
-
-        return back()->with('success', "Notification broadcasted to {$notificationCount} users in residence");
-    }
-
-    /**
-     * Show a single notification.
-     */
-    public function show($id)
-    {
-        $user = Auth::user();
-        $notification = Notification::with(['sender', 'recipient', 'residence'])->findOrFail($id);
-
-        // Only allow viewing if user is the recipient or can manage notifications
-        if ($notification->recipient_id !== $user->id && !$this->canManageNotifications()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        return response()->json($notification);
-    }
-
-    /**
-     * Update a notification (mark as read or edit content).
-     * Students can only mark as read. Managers can edit content.
-     */
-    public function update(Request $request, $id)
-    {
-        $user = Auth::user();
-        $notification = Notification::findOrFail($id);
-
-        // Check authorization
-        $isRecipient = $notification->recipient_id === $user->id;
-        $canManage = $this->canManageNotifications();
-
-        if (!$isRecipient && !$canManage) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        // Students can only mark as read
-        if ($isRecipient && !$canManage) {
-            $request->validate([
-                'is_read' => 'required|boolean',
-            ]);
-
-            $notification->update(['is_read' => $request->is_read]);
-        }
-        // Managers can edit everything
-        else if ($canManage) {
-            $request->validate([
-                'type' => 'sometimes|string|max:255',
-                'content' => 'sometimes|string',
-                'is_read' => 'sometimes|boolean',
-            ]);
-
-            $notification->update($request->only(['type', 'content', 'is_read']));
-        }
-
-        return redirect()->back()->with([
-            'message' => 'Notification updated successfully',
-            'notification' => $notification->fresh(),
+        $notification = Notification::create([
+            'type' => $data['type'],
+            'content' => $data['content'],
+            'residence_id' => (int) $residenceId,
+            'sender_id' => $request->user()->id,
         ]);
+
+        // return created notification
+        return response()->json(['notification' => $notification], 201);
     }
 
     /**
-     * Delete a notification.
-     * Only accessible to Admin, HouseParent, and HouseCommittee.
+     * Admin: update a notification (content/type).
      */
-    public function destroy($id)
+    public function update(Request $request, Notification $notification)
     {
-        if (!$this->canManageNotifications()) {
-            return response()->json(['error' => 'Unauthorized. Only Admin, HouseParent, and HouseCommittee can delete notifications.'], 403);
+        if (! $this->userIsAdmin()) {
+            return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        $notification = Notification::findOrFail($id);
+        $data = $request->validate([
+            'type' => 'sometimes|string|max:64',
+            'content' => 'sometimes|string',
+        ]);
+
+        $notification->update($data);
+
+        return response()->json(['notification' => $notification]);
+    }
+
+    /**
+     * Admin: delete a notification.
+     */
+    public function destroy(Notification $notification)
+    {
+        if (! $this->userIsAdmin()) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
         $notification->delete();
 
-        return redirect()->back()->with([
-            'message' => 'Notification deleted successfully',
-        ]);
-    }
-    
-    /**
-     * Return unread notification count for user
-     */
-    public function unreadCount()
-    {
-        $user = Auth::user();
-
-        $count = Notification::where('recipient_id', $user->id)
-                    ->where('is_read', false)
-                    ->count();
-
-        return response()->json(['count' => $count]);
-    }
-
-    /**
-     * Return latest announcements
-     */
-    
-    public function recentAnnouncements()
-    {
-        $notifications = \App\Models\Notification::latest()->take(5)->get();
-
-        return response()->json([
-            'status' => 'success',
-            'count' => $notifications->count(),
-            'data' => $notifications,
-        ]);
+        return response()->json(['message' => 'Deleted']);
     }
 }

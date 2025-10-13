@@ -64,11 +64,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/chatrooms/{id}', [App\Http\Controllers\ChatroomController::class, 'destroy']);
 
         // MESSAGES protected routes
-        Route::get('/messages', [App\Http\Controllers\MessagesController::class, 'index']);
-        Route::post('/messages', [App\Http\Controllers\MessagesController::class, 'store']);
-        Route::get('/messages/{id}', [App\Http\Controllers\MessagesController::class, 'show']);
-        Route::put('/messages/{id}', [App\Http\Controllers\MessagesController::class, 'update']);
-        Route::delete('/messages/{id}', [App\Http\Controllers\MessagesController::class, 'destroy']);
+        Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
+        Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
+        Route::get('/messages/{id}', [App\Http\Controllers\MessageController::class, 'show']);
+        Route::put('/messages/{id}', [App\Http\Controllers\MessageController::class, 'update']);
+        Route::delete('/messages/{id}', [App\Http\Controllers\MessageController::class, 'destroy']);
 
         // VOTING protected routes
         Route::get('/votes', [App\Http\Controllers\VotingController::class, 'index']);

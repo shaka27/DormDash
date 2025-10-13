@@ -43,6 +43,15 @@ class StudentUserSeeder extends Seeder
                 'password' => Hash::make('password123'),
                 'gender' => 'male',
                 'student_number' => 'STU003',
+            ],
+            [
+                'first_name' => 'Mlondi',
+                'last_name' => 'Gcaba',
+                'email' => 'mlondigcaba@example.com',
+                'contact_num' => '0607818656',
+                'password' => Hash::make('pass123'),
+                'gender' => 'male',
+                'student_number' => 'STU004',
             ]
         ];
 
@@ -54,9 +63,10 @@ class StudentUserSeeder extends Seeder
                 $studentData
             );
 
-            // Attach Student role
-            if ($studentRole && !$student->roles->contains($studentRole->id)) {
-                $student->roles()->attach($studentRole->id);
+            // Attach Student role (use syncWithoutDetaching to avoid contains() on a null relation
+            // and prevent duplicate attachments)
+            if ($studentRole) {
+                $student->roles()->syncWithoutDetaching($studentRole->id);
             }
         }
 
@@ -75,8 +85,8 @@ class StudentUserSeeder extends Seeder
         );
 
         $hcRole = Role::where('description', 'HouseCommittee')->first();
-        if ($hcRole && !$houseCommittee->roles->contains($hcRole->id)) {
-            $houseCommittee->roles()->attach($hcRole->id);
+        if ($hcRole) {
+            $houseCommittee->roles()->syncWithoutDetaching($hcRole->id);
         }
 
         // Create House Parent for testing
@@ -94,8 +104,8 @@ class StudentUserSeeder extends Seeder
         );
 
         $hpRole = Role::where('description', 'HouseParent')->first();
-        if ($hpRole && !$houseParent->roles->contains($hpRole->id)) {
-            $houseParent->roles()->attach($hpRole->id);
+        if ($hpRole) {
+            $houseParent->roles()->syncWithoutDetaching($hpRole->id);
         }
     }
 }
