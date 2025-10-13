@@ -12,17 +12,17 @@ class MaintenanceRequestController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
-        // If user is admin, redirect to admin index
-        if ($user->role === 'admin' || $user->role === 'house_parent' || $user->role === 'house_committee') {
-            return $this->adminIndex();
-        }
+    
+        // If user is admin, house_parent, or house_committee, show admin view
+        if (in_array($user->role, ['admin', 'house_parent', 'house_committee'])) {
+        return $this->adminIndex();
+         }
 
-        // For students, show only their requests
+         // For students, show only their requests
         $requests = $user->maintenanceRequests()
-            ->with('room.residence')
-            ->latest('reported_at')
-            ->get();
+          ->with('room.residence')
+         ->latest('reported_at')
+         ->get();
 
         return Inertia::render('Maintenance/page', [
             'requests' => $requests,

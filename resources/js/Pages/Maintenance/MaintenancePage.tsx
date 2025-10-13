@@ -1,3 +1,4 @@
+/*
 "use client"
 
 import type React from "react"
@@ -757,3 +758,4 @@ const RequestDetailsModal: React.FC = () => {
 }
 
 export default MaintenancePage
+*/
