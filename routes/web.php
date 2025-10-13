@@ -8,6 +8,11 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
+use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
+
+// Sanctum CSRF cookie endpoint (for SPA auth)
+Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show'])->name('sanctum.csrf-cookie');
+
 Route::middleware('guest')->group(function () {
     Route::get('/login', fn() => Inertia::render('auth/New_Login'))->name('login');
     Route::post('/login', [AuthController::class, 'login']);

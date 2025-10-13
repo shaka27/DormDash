@@ -1,5 +1,7 @@
 // resources/js/Pages/StudentLayout.jsx
 import React, { useState, useEffect } from 'react';
+import axios from "axios";
+axios.defaults.withCredentials = true;
 import { Link, usePage, router } from '@inertiajs/react';
 import {
   Home,
@@ -29,21 +31,21 @@ export default function StudentLayout({ children }) {
 
   // 🔹 Fetch unread notifications count
   useEffect(() => {
-    const fetchNotificationCount = async () => {
-      try {
-        const response = await axios.get('/api/notifications/count',{withCredentials: true});
-        setNotificationCount(response.data.count);
-      } catch (error) {
-        console.error("Error fetching notification count:", error);
-      }
-    };
+      const fetchNotificationCount = async () => {
+        try {
+          // Step 1: Get CSRF cookie for Sanctum
+          await axios.get("http://localhost:8000/sanctum/csrf-cookie");
 
-    fetchNotificationCount();
+          // Step 2: Fetch count
+          const res = await axios.get("http://localhost:8000/api/notifications/count");
+          setNotificationCount(res.data.count || 0);
+        } catch (err) {
+          console.error("Error fetching notification count:", err);
+        }
+      };
 
-    // Optional: auto-refresh every 60 seconds
-    const interval = setInterval(fetchNotificationCount, 60000);
-    return () => clearInterval(interval);
-  }, []);
+      fetchNotificationCount();
+    }, []);
 
   // Extract user roles and create role checking helpers
   const userRoles = auth.user?.roles?.map(role => role.description) || [];

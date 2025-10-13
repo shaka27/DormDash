@@ -53,7 +53,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'show']);  //Display single specific notification
     Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class,  'update']);
     Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy']);
-    Route::get('/notifications/count', [NotificationController::class, 'unreadCount']);
+    Route::get('/notifications/count', [App\Http\Controllers\NotificationController::class, 'unreadCount']);
+    //Route::get('/notifications/count', [NotificationController::class, 'unreadCount']);
     //Route::get('/notifications/recent', [NotificationController::class,'recentAnnouncements']);
 
         // CHATROOM protected routes
