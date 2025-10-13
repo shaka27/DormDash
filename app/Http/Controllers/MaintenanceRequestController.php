@@ -12,21 +12,20 @@ class MaintenanceRequestController extends Controller
     public function index()
     {
         $user = Auth::user();
-    
-        // If user is admin, house_parent, or house_committee, show admin view
+        
+        // If user is admin, house_parent, or house_committee, redirect to admin maintenance
         if (in_array($user->role, ['admin', 'house_parent', 'house_committee'])) {
-        return $this->adminIndex();
-         }
+            return redirect()->route('admin.maintenance.index');
+        }
 
-         // For students, show only their requests
+        // For students, show only their requests
         $requests = $user->maintenanceRequests()
-          ->with('room.residence')
-         ->latest('reported_at')
-         ->get();
+            ->with('room.residence')
+            ->latest('reported_at')
+            ->get();
 
-        return Inertia::render('Maintenance/page', [
-            'requests' => $requests,
-            'userRole' => $user->role
+        return Inertia::render('Maintenance/StudentMaintenancePage', [
+            'requests' => $requests
         ]);
     }
 
@@ -36,9 +35,8 @@ class MaintenanceRequestController extends Controller
             ->latest('reported_at')
             ->get();
 
-        return Inertia::render('Maintenance/page', [
-            'requests' => $requests,
-            'userRole' => 'admin'
+        return Inertia::render('Maintenance/AdminMaintenancePage', [
+            'requests' => $requests
         ]);
     }
 
@@ -53,6 +51,7 @@ class MaintenanceRequestController extends Controller
             'issue' => 'required|string|max:255',
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high',
+            'category' => 'required|string',
         ]);
 
         $user = Auth::user();
