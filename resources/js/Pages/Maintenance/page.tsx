@@ -1,4 +1,5 @@
-import MaintenancePage from './MaintenancePage'
+import StudentMaintenancePage from './StudentMaintenancePage'
+import AdminMaintenancePage from './AdminMaintenancePage'
 
 interface PageProps {
   requests: any[]
@@ -6,5 +7,11 @@ interface PageProps {
 }
 
 export default function Page({ requests, userRole }: PageProps) {
-  return <MaintenancePage initialRequests={requests} userRole={userRole} />
+  const isAdmin = userRole === 'admin' || userRole === 'house_parent' || userRole === 'house_committee'
+  
+  return isAdmin ? (
+    <AdminMaintenancePage initialRequests={requests} />
+  ) : (
+    <StudentMaintenancePage initialRequests={requests} />
+  )
 }
