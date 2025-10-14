@@ -17,6 +17,13 @@ class EventController extends Controller
         return Inertia::render("Student_Dashboard/Events", ["events" => $events]);
     }
 
+    // Show the edit event form
+    public function edit(Event $event)
+    {
+        return Inertia::render('Student_Dashboard/EditEvent', ['event' => $event]);
+    }
+
+
     public function getEventDetailsPage($event)
     {
         $event = Event::findOrFail($event);
@@ -107,4 +114,30 @@ class EventController extends Controller
 {
     return Inertia::render('Student_Dashboard/CreateEvent');
 }
+
+    public function rsvp(Request $request, $eventId)
+    {
+        $event = Event::findOrFail($eventId);
+        $user = auth()->user();
+
+        // Check if user already RSVP'd
+        if ($event->attendees()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'Already RSVP’d'], 400);
+        }
+
+        $event->attendees()->attach($user->id);
+
+        return response()->json(['message' => 'RSVP successful']);
+    }
+
+    public function cancelRsvp(Request $request, $eventId)
+    {
+        $event = Event::findOrFail($eventId);
+        $user = auth()->user();
+
+        $event->attendees()->detach($user->id);
+
+        return response()->json(['message' => 'RSVP cancelled']);
+    }
+
 }

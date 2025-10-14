@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, Home, Wrench, Clock, CheckCircle, AlertCircle, Phone, Mail, MapPin, User } from "lucide-react"
+import { Plus, Home, Wrench, Clock, CheckCircle, AlertCircle, Phone, Mail, MapPin, User, ArrowLeft } from "lucide-react"
 import { router } from '@inertiajs/react'
 import { toast } from 'sonner'
 
@@ -383,11 +383,20 @@ const StudentMaintenancePage: React.FC<StudentMaintenancePageProps> = ({ request
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Student Header */}
+      {/* Student Header with Back Button */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.visit('/StudentDashboard')}
+                className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              
               <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                 <Wrench className="h-6 w-6 text-white" />
               </div>

@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\MaintenanceRequestController; // Make sure this is imported
+use App\Http\Controllers\MaintenanceRequestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -49,7 +49,7 @@ Route::middleware('auth')->group(function () {
         // Student Dashboard – pass the authenticated user to the page
         Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
 
-    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'studentIndex'])->name('rooms.index');
+        Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'studentIndex'])->name('rooms.index');
         // Admin Rooms: list all rooms for the selected residence
         Route::get('/admin/rooms', [App\Http\Controllers\RoomController::class, 'adminIndex'])->name('admin.rooms.index');
         Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
@@ -63,32 +63,32 @@ Route::middleware('auth')->group(function () {
         Route::put('/voting-centre/{vote}', [App\Http\Controllers\VoteController::class, 'update'])->name('voting-centre.update');
         Route::delete('/voting-centre/{vote}', [App\Http\Controllers\VoteController::class, 'destroy'])->name('voting-centre.destroy');
         Route::post('/voting-centre/{vote}/submit', [App\Http\Controllers\VoteController::class, 'submitVote'])->name('voting-centre.submit');
-        Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
         
-
-        // Handle Create Event form submission
-        // Show Create Event page
+        // EVENT ROUTES
+        Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
         Route::get('/events/create', [App\Http\Controllers\EventController::class, 'create'])->name('events.create');
         Route::post('/events', [App\Http\Controllers\EventController::class, 'store'])->name('events.store');
+        Route::get('/events/{event}/edit', [App\Http\Controllers\EventController::class, 'edit'])->name('events.edit');
+        Route::put('/events/{event}', [App\Http\Controllers\EventController::class, 'update'])->name('events.update');
+        Route::delete('/events/{event}', [App\Http\Controllers\EventController::class, 'destroy'])->name('events.destroy');
         Route::get('/events/{event}/event-details', [App\Http\Controllers\EventController::class, 'getEventDetailsPage'])->name('events.details');
+        Route::post('/events/{event}/rsvp', [App\Http\Controllers\EventController::class, 'rsvp']);
+        Route::delete('/events/{event}/rsvp', [App\Http\Controllers\EventController::class, 'cancelRsvp']);
+        
         Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
         Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
         Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
         Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
-        // REMOVED DUPLICATE MAINTENANCE ROUTES FROM HERE
-
         Route::get('/residence-management', [App\Http\Controllers\ResidenceManagementController::class, 'index'])->name('residence-management.index');
 
-
         // Residence Management - Only for Admin, HouseParent, HouseCommittee
+        Route::post('/residence-management/access', [App\Http\Controllers\ResidenceManagementController::class, 'addAccess'])->name('residence-management.access.add');
+        Route::post('/residence-management/access/import', [App\Http\Controllers\ResidenceManagementController::class, 'importAccess'])->name('residence-management.access.import');
+        Route::delete('/residence-management/access/{id}', [App\Http\Controllers\ResidenceManagementController::class, 'deleteAccess'])->name('residence-management.access.delete');
 
-            Route::post('/residence-management/access', [App\Http\Controllers\ResidenceManagementController::class, 'addAccess'])->name('residence-management.access.add');
-            Route::post('/residence-management/access/import', [App\Http\Controllers\ResidenceManagementController::class, 'importAccess'])->name('residence-management.access.import');
-            Route::delete('/residence-management/access/{id}', [App\Http\Controllers\ResidenceManagementController::class, 'deleteAccess'])->name('residence-management.access.delete');
-
-            /* ==========================
+        /* ==========================
          * USER MANAGEMENT ROUTES
          * ========================== */
         Route::get('/user-management', fn() => Inertia::render('Student_Dashboard/UserManagement'))->name('user-management.index');
@@ -99,6 +99,5 @@ Route::middleware('auth')->group(function () {
         Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
         Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
-
     });
 });
