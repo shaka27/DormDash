@@ -28,7 +28,7 @@ class User extends Authenticatable
         'student_number',
         'residence_id',
         'room_id',
-    'bed_number',
+        'bed_number',
         'move_in_date',
         'expected_move_out',
         'emergency_contact_name',
