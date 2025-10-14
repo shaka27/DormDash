@@ -1,5 +1,6 @@
 // resources/js/Pages/StudentLayout.jsx
 import React, { useState, useEffect } from 'react';
+import axios from "axios";
 import { Link, usePage, router } from '@inertiajs/react';
 import {
   Home,
@@ -26,12 +27,13 @@ export default function StudentLayout({ children }) {
   const { url } = usePage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  
 
   // 🔹 Fetch unread notifications count
   useEffect(() => {
     const fetchNotificationCount = async () => {
       try {
-        const response = await axios.get('/api/notifications/count',{withCredentials: true});
+        const response = await axios.get('/notifications/count');
         setNotificationCount(response.data.count);
       } catch (error) {
         console.error("Error fetching notification count:", error);
