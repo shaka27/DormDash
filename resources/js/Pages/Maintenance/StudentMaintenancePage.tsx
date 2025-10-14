@@ -118,6 +118,7 @@ const StudentMaintenancePage: React.FC<StudentMaintenancePageProps> = ({ request
     description: string
     priority: Urgency
     category: string
+    room_number: string
   }) => {
     setIsLoading(true)
     try {
@@ -125,6 +126,7 @@ const StudentMaintenancePage: React.FC<StudentMaintenancePageProps> = ({ request
         onSuccess: () => {
           toast.success('Maintenance request submitted successfully!')
           setIsNewRequestModalOpen(false)
+          router.reload()
         },
         onError: (errors) => {
           toast.error('Failed to submit request. Please try again.')
@@ -196,12 +198,17 @@ const StudentMaintenancePage: React.FC<StudentMaintenancePageProps> = ({ request
       description: "",
       category: "general",
       priority: "medium" as Urgency,
+      room_number: "",
     })
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
       if (!formData.issue.trim()) {
         toast.error("Please enter an issue title")
+        return
+      }
+      if (!formData.room_number.trim()) {
+        toast.error("Please enter your room number")
         return
       }
 
@@ -236,7 +243,18 @@ const StudentMaintenancePage: React.FC<StudentMaintenancePageProps> = ({ request
                 value={formData.description}
                 onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 placeholder="Please provide a detailed description of the problem..."
-                rows={4}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Room Number *</label>
+              <Input
+                value={formData.room_number}
+                onChange={(e) => setFormData((prev) => ({ ...prev, room_number: e.target.value }))}
+                placeholder="e.g., 101, 202A, etc."
+                className="w-full"
+                required
               />
             </div>
 
@@ -247,10 +265,10 @@ const StudentMaintenancePage: React.FC<StudentMaintenancePageProps> = ({ request
                   value={formData.category}
                   onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="plumbing">Plumbing</SelectItem>
                     <SelectItem value="electrical">Electrical</SelectItem>
                     <SelectItem value="furniture">Furniture</SelectItem>
@@ -266,10 +284,10 @@ const StudentMaintenancePage: React.FC<StudentMaintenancePageProps> = ({ request
                   value={formData.priority}
                   onValueChange={(value: Urgency) => setFormData((prev) => ({ ...prev, priority: value }))}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Select priority" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white">
                     <SelectItem value="low">Low</SelectItem>
                     <SelectItem value="medium">Medium</SelectItem>
                     <SelectItem value="high">High</SelectItem>
@@ -401,7 +419,7 @@ const StudentMaintenancePage: React.FC<StudentMaintenancePageProps> = ({ request
                 <Wrench className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Maintenance Center</h1>
+                <h1 className="text-3xl font-bold text-gray-900">Student Maintenance Center</h1>
                 <p className="text-gray-600 mt-1">Report and track your maintenance requests</p>
               </div>
             </div>
