@@ -64,6 +64,12 @@ Route::middleware('auth')->group(function () {
         Route::delete('/voting-centre/{vote}', [App\Http\Controllers\VoteController::class, 'destroy'])->name('voting-centre.destroy');
         Route::post('/voting-centre/{vote}/submit', [App\Http\Controllers\VoteController::class, 'submitVote'])->name('voting-centre.submit');
         Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+        
+
+        // Handle Create Event form submission
+        // Show Create Event page
+        Route::get('/events/create', [App\Http\Controllers\EventController::class, 'create'])->name('events.create');
+        Route::post('/events', [App\Http\Controllers\EventController::class, 'store'])->name('events.store');
         Route::get('/events/{event}/event-details', [App\Http\Controllers\EventController::class, 'getEventDetailsPage'])->name('events.details');
         Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
         Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');

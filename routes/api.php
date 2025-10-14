@@ -32,6 +32,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 
+    // EVENT API routes
+    Route::post('/events', [App\Http\Controllers\EventController::class, 'store']);
+    Route::put('/events/{id}', [App\Http\Controllers\EventController::class, 'update']);
+    Route::delete('/events/{id}', [App\Http\Controllers\EventController::class, 'destroy']);
+
+
 
     // RESIDENCE protected routes here
     Route::get('/residences', [App\Http\Controllers\ResidenceController::class, 'index']);

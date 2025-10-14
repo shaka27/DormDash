@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Inertia\Inertia;
-
+use App\Events\EventCreated;
+use App\Events\EventUpdated;
+use App\Events\EventDeleted;
 class EventController extends Controller
 {
     public function index()
@@ -49,4 +51,60 @@ class EventController extends Controller
 
         return response()->json($events);
     }
+
+    // CREATE - Broadcast to all users
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string',
+            'description' => 'nullable|string',
+            'date' => 'required|date',
+            'location' => 'nullable|string',
+        ]);
+
+        $event = Event::create($validated);
+
+        // Broadcast to all connected users
+        broadcast(new EventCreated($event))->toOthers();
+
+        return response()->json($event, 201);
+    }
+
+    // UPDATE - Broadcast to all users
+    public function update(Request $request, $id)
+    {
+        $event = Event::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string',
+            'discription' => 'sometimes|string',
+            'date' => 'sometimes|date',
+            'location' => 'sometimes|string',
+        ]);
+
+        $event->update($validated);
+
+        // Broadcast update to all connected users
+        broadcast(new EventUpdated($event))->toOthers();
+
+        return response()->json($event, 200);
+    }
+
+    // DELETE - Broadcast to all users
+    public function destroy($id)
+    {
+        $event = Event::findOrFail($id);
+        $eventId = $event->id;
+        $event->delete();
+
+        // Broadcast deletion to all connected users
+        broadcast(new EventDeleted($eventId))->toOthers();
+
+        return response()->json(['message' => 'Event deleted'], 200);
+    }
+
+    public function create()
+{
+    return Inertia::render('Student_Dashboard/CreateEvent');
+}
 }

@@ -91,7 +91,6 @@ class RoomController extends Controller
         // Fetch rooms scoped to the selected residence
         $rooms = Room::with(['residence.campus', 'users'])
             ->where('residence_id', $selectedResidenceId)
-            ->orderBy('floor')
             ->orderBy('number')
             ->get();
 
