@@ -50,6 +50,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
 
     Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'studentIndex'])->name('rooms.index');
+        // Admin Rooms: list all rooms for the selected residence
+        Route::get('/admin/rooms', [App\Http\Controllers\RoomController::class, 'adminIndex'])->name('admin.rooms.index');
         Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
         Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');

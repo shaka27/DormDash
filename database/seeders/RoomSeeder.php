@@ -13,24 +13,34 @@ class RoomSeeder extends Seeder
      */
     public function run(): void
     {
-        $residences = Residence::take(3)->get();
+        // Seed rooms for ALL residences, not just a subset
+        $residences = Residence::all();
 
         if ($residences->isEmpty()) {
             return; // Skip if no residences available
         }
 
         foreach ($residences as $residence) {
-            // Create rooms for each residence
+            // Create rooms for each residence (idempotent via firstOrCreate)
             for ($floor = 1; $floor <= 4; $floor++) {
                 for ($roomNum = 1; $roomNum <= 10; $roomNum++) {
                     $statuses = ['Available', 'Occupied', 'Maintenance', 'Reserved'];
                     $status = $statuses[array_rand($statuses)];
-                    
-                    Room::create([
-                        'residence_id' => $residence->id,
-                        'number' => $floor . sprintf('%02d', $roomNum),
-                        'status' => $status,
-                    ]);
+
+                    $number = (int)($floor . sprintf('%02d', $roomNum));
+
+                    Room::firstOrCreate(
+                        [
+                            'residence_id' => $residence->id,
+                            'number' => $number,
+                        ],
+                        [
+                            'status' => $status,
+                            'floor' => $floor,
+                            'capacity' => 3,
+                            'type' => 'Residence',
+                        ]
+                    );
                 }
             }
         }

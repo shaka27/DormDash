@@ -69,6 +69,41 @@ class RoomController extends Controller
     }
 
     /**
+     * Admin-facing Rooms page: list all rooms in the selected residence
+     */
+    public function adminIndex(Request $request)
+    {
+        $user = $request->user();
+
+        // Ensure only admins can access
+        $isAdmin = $user && $user->roles()->where('description', 'Admin')->exists();
+        if (!$isAdmin) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Residence must be selected and stored in session
+        $selectedResidenceId = $request->session()->get('selected_residence_id');
+        if (!$selectedResidenceId) {
+            // No fallbacks: require selection first
+            abort(404, 'Residence not selected');
+        }
+
+        // Fetch rooms scoped to the selected residence
+        $rooms = Room::with(['residence.campus', 'users'])
+            ->where('residence_id', $selectedResidenceId)
+            ->orderBy('floor')
+            ->orderBy('number')
+            ->get();
+
+        $residence = \App\Models\Residence::with('campus')->findOrFail($selectedResidenceId);
+
+        return Inertia::render('Admin/RoomsIndex', [
+            'rooms' => $rooms,
+            'residence' => $residence,
+        ]);
+    }
+
+    /**
      * Fetch the room details page
      */
     public function getRoomDetailsPage(Request $request, Room $room)
