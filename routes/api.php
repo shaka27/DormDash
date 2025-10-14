@@ -27,7 +27,7 @@ Route::get('/events/upcoming/count', [EventController::class, 'upcommingEvents']
 Route::get('/vote/activeVotes/count', [VoteController::class, 'activeVotes']);
 Route::get('/events/upcoming', [EventController::class, 'upcoming']);
 Route::get('/notifications/recent', [NotificationController::class,'recentAnnouncements']);
-Route::get('maintenance_requests/pendingRuests',[MaintenanceRequestController::class, 'count']);
+Route::get('/maintenance_requests/pendingRequest/count',[MaintenanceRequestController::class, 'pendingRequests']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {

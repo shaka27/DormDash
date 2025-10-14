@@ -82,7 +82,7 @@ export default function StudentDashboard() {
         axios.get("/api/events/upcoming/count").then(res => setUpcomingCount(res.data.count));
         axios.get("/api/notifications/recent").then(res => setRecentAnnouncement(res.data.data || []));
         axios.get("/api/vote/activeVotes/count").then(res => setActiveVoteCount(res.data.count));
-        axios.get("/api/maintenance_requests/pendingRequest/count").then(res => setUpcomingCount(res.data.count));
+        axios.get("/api/maintenance_requests/pendingRequest/count").then(res => setPendingRequestCount(res.data.count));
         
     }, []);
 
