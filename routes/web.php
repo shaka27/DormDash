@@ -97,33 +97,33 @@ Route::middleware('auth')->group(function () {
         // Student Dashboard
         Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
 
-        // Rooms
-        Route::get('/rooms', [RoomController::class, 'index'])->name('rooms.index');
-        Route::get('/rooms/{room}/room-details', [RoomController::class, 'getRoomDetailsPage'])->name('room.details');
+    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'studentIndex'])->name('rooms.index');
+        // Admin Rooms: list all rooms for the selected residence
+        Route::get('/admin/rooms', [App\Http\Controllers\RoomController::class, 'adminIndex'])->name('admin.rooms.index');
+        Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
+        Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');
+        Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'update'])->name('notifications.update');
+        Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+        Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');
+        Route::get('/voting-centre/{vote}/voting-details', [App\Http\Controllers\VoteController::class, 'getVotingDetailsPage'])->name('voting-centre.details');
+        Route::post('/voting-centre', [App\Http\Controllers\VoteController::class, 'store'])->name('voting-centre.store');
+        Route::put('/voting-centre/{vote}', [App\Http\Controllers\VoteController::class, 'update'])->name('voting-centre.update');
+        Route::delete('/voting-centre/{vote}', [App\Http\Controllers\VoteController::class, 'destroy'])->name('voting-centre.destroy');
+        Route::post('/voting-centre/{vote}/submit', [App\Http\Controllers\VoteController::class, 'submitVote'])->name('voting-centre.submit');
+        Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
+        
 
-        // Student Notifications Page (Inertia)
-        Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
-
-        // Voting Centre
-        Route::get('/voting-centre', [VoteController::class, 'index'])->name('voting-centre.index');
-        Route::get('/voting-centre/{vote}/voting-details', [VoteController::class, 'getVotingDetailsPage'])->name('voting-centre.details');
-        Route::post('/voting-centre', [VoteController::class, 'store'])->name('voting-centre.store');
-        Route::put('/voting-centre/{vote}', [VoteController::class, 'update'])->name('voting-centre.update');
-        Route::delete('/voting-centre/{vote}', [VoteController::class, 'destroy'])->name('voting-centre.destroy');
-        Route::post('/voting-centre/{vote}/submit', [VoteController::class, 'submitVote'])->name('voting-centre.submit');
-
-        // Events
-        Route::get('/events', [EventController::class, 'index'])->name('events.index');
-        Route::get('/events/{event}/event-details', [EventController::class, 'getEventDetailsPage'])->name('events.details');
-
-        // Misc Student Pages
-        Route::get('/StudentLayout', fn () => Inertia::render('Student_Dashboard/StudentLayout'));
-        Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
-
-        // Profile
-        Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-        Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
-        Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        // Handle Create Event form submission
+        // Show Create Event page
+        Route::get('/events/create', [App\Http\Controllers\EventController::class, 'create'])->name('events.create');
+        Route::post('/events', [App\Http\Controllers\EventController::class, 'store'])->name('events.store');
+        Route::get('/events/{event}/event-details', [App\Http\Controllers\EventController::class, 'getEventDetailsPage'])->name('events.details');
+        Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
+        Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
+        Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
+        Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
         // Residence Management
         Route::get('/residence-management', [ResidenceManagementController::class, 'index'])->name('residence-management.index');

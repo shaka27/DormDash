@@ -68,10 +68,10 @@ export default function StudentLayout({ children }) {
       roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee'] // All roles
     },
     {
-  name: 'Room',
-      href: '/rooms',
+      name: isAdmin ? 'Rooms' : 'Room',
+      href: isAdmin ? '/admin/rooms' : '/rooms',
       icon: DoorClosed,
-      current: url.startsWith('/rooms'),
+      current: isAdmin ? url.startsWith('/admin/rooms') : url.startsWith('/rooms'),
       roles: ['Student', 'Admin', 'HouseParent', 'HouseCommittee']
     },
     {
