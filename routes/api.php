@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\MaintenanceRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +27,7 @@ Route::get('/events/upcoming/count', [EventController::class, 'upcommingEvents']
 Route::get('/vote/activeVotes/count', [VoteController::class, 'activeVotes']);
 Route::get('/events/upcoming', [EventController::class, 'upcoming']);
 Route::get('/notifications/recent', [NotificationController::class,'recentAnnouncements']);
+Route::get('maintenance_requests/pendingRuests',[MaintenanceRequestController::class, 'count']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {

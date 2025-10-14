@@ -92,4 +92,14 @@ class MaintenanceRequestController extends Controller
 
         return redirect()->back()->with('success', 'Maintenance request updated successfully.');
     }
+
+    public function pendingRequests()
+    {
+        $user = Auth::user();
+
+        $count = MaintenanceRequest::where('completed_at', null)
+                    ->count();
+
+        return response()->json(['count' => $count]);
+    }
 }

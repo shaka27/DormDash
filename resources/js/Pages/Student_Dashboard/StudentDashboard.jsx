@@ -62,7 +62,7 @@ export default function StudentDashboard() {
     const [studentCount, setStudentCount] = useState(0);
     const [upcomingCount, setUpcomingCount] = useState(0);
     const [activeVoteCount, setActiveVoteCount] = useState(0);
-    const [notificationCount, setNotificationCount] = useState(0);
+    const [pendingRequestCount, setPendingRequestCount] = useState(0);
     const [recentAnnouncement, setRecentAnnouncement] = useState([]);
     const [events, setEvents] = useState([]);
     const [error, setError] = useState(null);
@@ -82,7 +82,8 @@ export default function StudentDashboard() {
         axios.get("/api/events/upcoming/count").then(res => setUpcomingCount(res.data.count));
         axios.get("/api/notifications/recent").then(res => setRecentAnnouncement(res.data.data || []));
         axios.get("/api/vote/activeVotes/count").then(res => setActiveVoteCount(res.data.count));
-        axios.get("/api/notification/count").then(res => setNotificationCount(res.data.count));
+        axios.get("/api/maintenance_requests/pendingRequest/count").then(res => setUpcomingCount(res.data.count));
+        
     }, []);
 
     // Listen for Laravel Echo events
@@ -126,7 +127,7 @@ export default function StudentDashboard() {
                     {hasManagementAccess ? (
                         <>
                             <StatCard title="Total Students" value={studentCount} subtitle="Active residents" icon="👥" iconBg="bg-blue-100" iconColor="text-blue-600" />
-                            <StatCard title="Pending Requests" value="12" subtitle="Maintenance & Issues" icon="⚠️" iconBg="bg-orange-100" iconColor="text-orange-600" />
+                            <StatCard title="Pending Requests" value={pendingRequestCount} subtitle="Maintenance & Issues" icon="⚠️" iconBg="bg-orange-100" iconColor="text-orange-600" />
                             <StatCard title="Upcoming Events" value={upcomingCount} subtitle="This week" icon="📅" iconBg="bg-green-100" iconColor="text-green-600" />
                             <StatCard title="Active Votes" value={activeVoteCount} subtitle="In progress" icon="🗳️" iconBg="bg-purple-100" iconColor="text-purple-600" />
                         </>
