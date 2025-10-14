@@ -11,13 +11,21 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResidenceManagementController;
+use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-
 use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 
 // Sanctum CSRF cookie endpoint (for SPA auth)
-Route::get('/sanctum/csrf-cookie', [\Laravel\Sanctum\Http\Controllers\CsrfCookieController::class, 'show'])->name('sanctum.csrf-cookie');
+Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show'])->name('sanctum.csrf-cookie');
 
+// Root route - redirect to appropriate page
+Route::get('/', function () {
+    return auth()->check() 
+        ? redirect('/StudentDashboard') 
+        : redirect('/login');
+});
+
+// Guest Routes (Login & Register)
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
         return auth()->check()
@@ -61,6 +69,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('notifications/{notification}', [NotificationController::class, 'destroy'])
             ->name('admin.notifications.destroy');
     });
+    
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -133,5 +142,4 @@ Route::middleware('auth')->group(function () {
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 });
-
 
