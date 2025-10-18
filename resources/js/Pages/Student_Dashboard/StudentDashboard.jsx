@@ -1,22 +1,57 @@
 import React, { useEffect, useState } from 'react';
 import axios from "axios";
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import StudentLayout from './StudentLayout';
 
-function EventItem({ title, time, location, priority, canManage, eventId }) {
+function EventItem({ event, canManage, onDelete }) {
+    const handleDelete = () => {
+        if (!confirm("Are you sure you want to delete this event?")) return;
+
+        router.delete(`/events/${event.id}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                onDelete(event.id);
+            },
+            onError: (errors) => {
+                console.error(errors);
+                alert("Failed to delete event");
+            }
+        });
+    };
+
     return (
-        <div className="flex items-start justify-between p-4 border border-gray-200 rounded hover:shadow-sm transition-shadow">
-            <div className="flex-1">
-                <h3 className="text-sm font-medium text-gray-900">{title}</h3>
-                <p className="text-xs text-gray-500">{time} | {location}</p>
+        <div className="flex flex-col p-4 border border-gray-200 rounded hover:shadow-sm transition-shadow">
+            <div className="flex justify-between items-start">
+                <div>
+                    <h3 className="text-sm font-medium text-gray-900">{event.name}</h3>
+                    <p className="text-xs text-gray-500">
+                        {new Date(event.date).toLocaleString()} | {event.location || "TBA"}
+                    </p>
+                </div>
+                {canManage && (
+                    <div className="flex space-x-2">
+                        <Link
+                            href={`/events/${event.id}/edit`}
+                            className="text-indigo-600 hover:text-indigo-500 text-sm"
+                        >
+                            Edit
+                        </Link>
+                        <button
+                            onClick={handleDelete}
+                            className="text-red-600 hover:text-red-500 text-sm"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                )}
             </div>
-            {canManage && (
-                <Link
-                    href={route('events.edit', eventId)}
-                    className="text-indigo-600 hover:text-indigo-500 text-sm"
-                >
-                    Edit
-                </Link>
+            {event.description && (
+                <p className="mt-2 text-gray-700 text-sm">{event.description}</p>
+            )}
+            {event.rsvp !== undefined && (
+                <p className="mt-1 text-xs text-gray-500">
+                    {event.rsvp ? "✓ You are attending" : "You have not RSVP'd"}
+                </p>
             )}
         </div>
     );
@@ -75,36 +110,39 @@ export default function StudentDashboard() {
     const isStudent = hasRole(['Student']);
     const hasManagementAccess = isAdmin || isHouseParent || isHouseCommittee;
 
-    // Fetch counts and data
+    // Fetch counts and data on component mount
     useEffect(() => {
-        axios.get("/api/user/count").then(res => setStudentCount(res.data.count)).catch(() => setError("Failed to fetch student count."));
-        axios.get("/api/events/upcoming", { withCredentials: true }).then(res => setEvents(res.data));
-        axios.get("/api/events/upcoming/count").then(res => setUpcomingCount(res.data.count));
-        axios.get("/api/notifications/recent").then(res => setRecentAnnouncement(res.data.data || []));
-        axios.get("/api/vote/activeVotes/count").then(res => setActiveVoteCount(res.data.count));
-        axios.get("/api/maintenance_requests/pendingRequest/count").then(res => setPendingRequestCount(res.data.count));
-        
-    }, []);
+        const fetchData = async () => {
+            try {
+                const [
+                    studentRes,
+                    eventsRes,
+                    upcomingRes,
+                    notificationsRes,
+                    votesRes,
+                    maintenanceRes
+                ] = await Promise.all([
+                    axios.get("/api/user/count"),
+                    axios.get("/api/events/upcoming", { withCredentials: true }),
+                    axios.get("/api/events/upcoming/count"),
+                    axios.get("/api/notifications/recent"),
+                    axios.get("/api/vote/activeVotes/count"),
+                    axios.get("/api/maintenance_requests/pendingRequest/count")
+                ]);
 
-    // Listen for Laravel Echo events
-    useEffect(() => {
-        if (!window.Echo) return;
+                setStudentCount(studentRes.data.count);
+                setEvents(eventsRes.data);
+                setUpcomingCount(upcomingRes.data.count);
+                setRecentAnnouncement(notificationsRes.data.data || []);
+                setActiveVoteCount(votesRes.data.count);
+                setPendingRequestCount(maintenanceRes.data.count);
+            } catch (err) {
+                console.error("Error fetching dashboard data:", err);
+                setError("Failed to load dashboard data");
+            }
+        };
 
-        const channel = window.Echo.channel('events');
-        channel
-            .listen('EventCreated', (e) => {
-                setEvents(prev => [...prev, e.event]);
-                setUpcomingCount(prev => prev + 1);
-            })
-            .listen('EventUpdated', (e) => {
-                setEvents(prev => prev.map(event => event.id === e.event.id ? e.event : event));
-            })
-            .listen('EventDeleted', (e) => {
-                setEvents(prev => prev.filter(event => event.id !== e.eventId));
-                setUpcomingCount(prev => Math.max(0, prev - 1));
-            });
-
-        return () => window.Echo.leaveChannel('events');
+        fetchData();
     }, []);
 
     return (
@@ -121,6 +159,13 @@ export default function StudentDashboard() {
                         {isStudent && !hasManagementAccess && "Here's what's happening in your residence today."}
                     </p>
                 </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                        {error}
+                    </div>
+                )}
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -161,12 +206,9 @@ export default function StudentDashboard() {
                             {events.length > 0 ? events.map(event => (
                                 <EventItem
                                     key={event.id}
-                                    eventId={event.id}
-                                    title={event.name}
-                                    time={new Date(event.date).toLocaleString()}
-                                    location={event.location || "TBA"}
-                                    priority={event.priority || "medium"}
+                                    event={event}
                                     canManage={hasManagementAccess}
+                                    onDelete={(id) => setEvents(prev => prev.filter(e => e.id !== id))}
                                 />
                             )) : <p className="text-gray-500 text-sm">No upcoming events.</p>}
                         </div>

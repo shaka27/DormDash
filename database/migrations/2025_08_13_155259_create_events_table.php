@@ -14,10 +14,15 @@ return new class extends Migration
         Schema::create('events', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('description');
-            $table->datetime('date');
+            $table->text('description')->nullable(); // ✅ text instead of string for longer descriptions
+            $table->dateTime('date');
+            $table->string('location')->nullable();
+            
+           
+             $table->foreignId('residence_id')->nullable()->constrained('residence')->onDelete('cascade');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+            
             $table->timestamps();
-            $table->string('location');
         });
     }
 
