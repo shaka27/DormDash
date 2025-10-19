@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,6 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
         if (! $user) return false;
-        // adjust to your role implementation; this checks Role.description == 'Admin'
         return $user->roles->pluck('description')->contains('Admin');
     }
 
@@ -24,9 +24,8 @@ class NotificationController extends Controller
     {
         $user = auth()->user();
 
-        $notifications = Notification::where(function ($q) use ($user) {
-                $q->where('residence_id', $user->residence_id);
-            })
+        // Get notifications for the user's residence
+        $notifications = Notification::where('residence_id', $user->residence_id)
             ->with('sender')
             ->orderByDesc('created_at')
             ->get();
@@ -34,7 +33,6 @@ class NotificationController extends Controller
         return Inertia::render('Notifications', [
             'notifications' => $notifications,
             'user' => $user,
-            'canManage' => $user->can('manage notifications'), // or whatever permission you use
         ]);
     }
 
@@ -48,6 +46,7 @@ class NotificationController extends Controller
         }
 
         $notifications = Notification::where('residence_id', $residenceId)
+            ->with('sender')
             ->orderByDesc('created_at')
             ->get();
 
@@ -55,35 +54,55 @@ class NotificationController extends Controller
     }
 
     /**
+     * Show a single notification with full details.
+     */
+    public function show(Notification $notification)
+    {
+        $user = auth()->user();
+        
+        // Check if user has access to this notification
+        if ($notification->residence_id !== $user->residence_id) {
+            abort(403, 'Unauthorized');
+        }
+
+        // Mark as read if not already
+        if (!$notification->is_read) {
+            $notification->update(['is_read' => true]);
+        }
+
+        return Inertia::render('Student_Dashboard/NotificationDetails', [
+            'notification' => $notification->load('sender'),
+        ]);
+    }
+
+    /**
      * Admin: create a notification for a residence.
      */
     public function store(Request $request)
-{
-    $request->validate([
-        'type' => 'required|string',
-        'content' => 'required|string',
-        'residence_id' => 'required|exists:residences,id',
-    ]);
+    {
+        if (! $this->userIsAdmin()) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
 
-    $notification = Notification::create([
-        'type' => $request->type,
-        'content' => $request->content,
-        'sender_id' => auth()->id(),
-        'residence_id' => $request->residence_id,
-    ]);
+        $request->validate([
+            'type' => 'required|string|in:announcement,technical,reminder,maintenance',
+            'content' => 'required|string|max:1000',
+            'residence_id' => 'required|exists:residences,id',
+        ]);
 
-    // Get all students in the residence
-    $students = User::whereHas('roles', fn($q) => $q->where('description', 'Student'))
-        ->where('residence_id', $request->residence_id)
-        ->get();
+        $notification = Notification::create([
+            'type' => $request->type,
+            'content' => $request->content,
+            'user_id' => auth()->id(),
+            'residence_id' => $request->residence_id,
+            'is_read' => false,
+        ]);
 
-    // Attach notification to each student
-    foreach ($students as $student) {
-        $student->notifications()->attach($notification->id, ['is_read' => false]);
+        return response()->json([
+            'message' => 'Notification created',
+            'notification' => $notification->load('sender')
+        ], 201);
     }
-
-    return back()->with('success', 'Notification broadcast to residence');
-}
 
     /**
      * Admin: update a notification (content/type).
@@ -95,13 +114,17 @@ class NotificationController extends Controller
         }
 
         $data = $request->validate([
-            'type' => 'sometimes|string|max:64',
-            'content' => 'sometimes|string',
+            'type' => 'sometimes|string|in:announcement,technical,reminder,maintenance',
+            'content' => 'sometimes|string|max:1000',
+            'is_read' => 'sometimes|boolean',
         ]);
 
         $notification->update($data);
 
-        return response()->json(['notification' => $notification]);
+        return response()->json([
+            'message' => 'Notification updated',
+            'notification' => $notification
+        ]);
     }
 
     /**
@@ -115,31 +138,69 @@ class NotificationController extends Controller
 
         $notification->delete();
 
-        return response()->json(['message' => 'Deleted']);
+        return response()->json(['message' => 'Notification deleted']);
     }
 
-    public function clearAll()
+    /**
+     * Mark a notification as read.
+     */
+    public function markAsRead(Notification $notification)
     {
-        $user = auth()->user();
+        $notification->update(['is_read' => true]);
 
-        // Assuming a many-to-many pivot between users and notifications
-        $user->notifications()->detach();
-
-        return back()->with('success', 'All notifications cleared');
+        return response()->json(['message' => 'Notification marked as read']);
     }
 
+    /**
+     * Get unread notification count for current user.
+     */
     public function count()
     {
         $user = auth()->user();
-        $count = $user->notifications()->whereNull('read_at')->count();
+        if (!$user || !$user->residence_id) {
+            return response()->json(['count' => 0]);
+        }
+
+        $count = Notification::where('residence_id', $user->residence_id)
+            ->where('is_read', false)
+            ->count();
+
         return response()->json(['count' => $count]);
     }
 
+    /**
+     * Get recent unread notifications for current user.
+     */
     public function recent()
     {
         $user = auth()->user();
-        $notifications = $user->notifications()->latest()->take(5)->get();
+        if (!$user || !$user->residence_id) {
+            return response()->json(['notifications' => []]);
+        }
+
+        $notifications = Notification::where('residence_id', $user->residence_id)
+            ->where('is_read', false)
+            ->with('sender')
+            ->orderByDesc('created_at')
+            ->take(5)
+            ->get();
+
         return response()->json(['notifications' => $notifications]);
     }
 
+    /**
+     * Clear all notifications for current user.
+     */
+    public function clearAll()
+    {
+        $user = auth()->user();
+        if (!$user || !$user->residence_id) {
+            return response()->json(['message' => 'No residence selected']);
+        }
+
+        Notification::where('residence_id', $user->residence_id)
+            ->update(['is_read' => true]);
+
+        return response()->json(['message' => 'All notifications marked as read']);
+    }
 }

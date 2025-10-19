@@ -18,19 +18,23 @@ use Laravel\Sanctum\Http\Controllers\CsrfCookieController;
 // Sanctum CSRF cookie endpoint (for SPA auth)
 Route::get('/sanctum/csrf-cookie', [CsrfCookieController::class, 'show'])->name('sanctum.csrf-cookie');
 
-// Root route - redirect to appropriate page
+// Root route - redirect to login
 Route::get('/', function () {
-    return auth()->check() 
-        ? redirect('/StudentDashboard') 
-        : redirect('/login');
+    if (auth()->check()) {
+        // User is logged in - check if they have selected a residence
+        if (session()->has('selected_residence_id')) {
+            return redirect('/StudentDashboard');
+        }
+        return redirect('/residence-overview');
+    }
+    // User is not logged in
+    return redirect('/login');
 });
 
 // Guest Routes (Login & Register)
 Route::middleware('guest')->group(function () {
     Route::get('/login', function () {
-        return auth()->check()
-            ? redirect('/StudentDashboard')
-            : Inertia::render('auth/New_Login');
+        return Inertia::render('auth/New_Login');
     })->name('login');
 
     Route::post('/login', [AuthController::class, 'login']);
@@ -97,14 +101,17 @@ Route::middleware('auth')->group(function () {
         // Student Dashboard
         Route::get('/StudentDashboard', fn() => Inertia::render('Student_Dashboard/StudentDashboard'));
 
-    Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'studentIndex'])->name('rooms.index');
+        Route::get('/rooms', [App\Http\Controllers\RoomController::class, 'studentIndex'])->name('rooms.index');
         // Admin Rooms: list all rooms for the selected residence
         Route::get('/admin/rooms', [App\Http\Controllers\RoomController::class, 'adminIndex'])->name('admin.rooms.index');
         Route::get('/rooms/{room}/room-details', [App\Http\Controllers\RoomController::class, 'getRoomDetailsPage'])->name('room.details');
+        //Notifications
         Route::get('/notifications',[App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+        Route::get('/notifications/{notification}', [App\Http\Controllers\NotificationController::class, 'show'])->name('notifications.show');
         Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');
         Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'update'])->name('notifications.update');
         Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+        
         Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');
         Route::get('/voting-centre/{vote}/voting-details', [App\Http\Controllers\VoteController::class, 'getVotingDetailsPage'])->name('voting-centre.details');
         Route::post('/voting-centre', [App\Http\Controllers\VoteController::class, 'store'])->name('voting-centre.store');
@@ -112,10 +119,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/voting-centre/{vote}', [App\Http\Controllers\VoteController::class, 'destroy'])->name('voting-centre.destroy');
         Route::post('/voting-centre/{vote}/submit', [App\Http\Controllers\VoteController::class, 'submitVote'])->name('voting-centre.submit');
         Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
-        
-
-        // Handle Create Event form submission
-        // Show Create Event page
         Route::get('/events/create', [App\Http\Controllers\EventController::class, 'create'])->name('events.create');
         Route::post('/events', [App\Http\Controllers\EventController::class, 'store'])->name('events.store');
         Route::get('/events/{event}/event-details', [App\Http\Controllers\EventController::class, 'getEventDetailsPage'])->name('events.details');
@@ -142,4 +145,3 @@ Route::middleware('auth')->group(function () {
         Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
     });
 });
-

@@ -10,26 +10,33 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
+            
+            // Notification details
+            $table->string('type'); // announcement, technical, reminder, maintenance
             $table->text('content');
             $table->boolean('is_read')->default(false);
 
-            // Sender (creator of the notification)
+            // Sender (creator of the notification - typically an admin)
             $table->foreignId('user_id')
                   ->constrained('users')
                   ->onDelete('cascade');
 
-            // Recipient (who receives it)
+            // Recipient (optional - if null, it's a broadcast to all in residence)
             $table->foreignId('recipient_id')
+                  ->nullable()
                   ->constrained('users')
                   ->onDelete('cascade');
 
-            // Residence context (optional but used in controller)
+            // Residence context (required)
             $table->foreignId('residence_id')
                   ->constrained('residence')
                   ->onDelete('cascade');
 
             $table->timestamps();
+
+            // Indexes for better query performance
+            $table->index(['residence_id', 'is_read']);
+            $table->index(['user_id', 'created_at']);
         });
     }
 

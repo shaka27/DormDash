@@ -21,13 +21,13 @@ export default function New_Login() {
     e.preventDefault();
     console.log('Submitting form...');
     post("/login", {
-      onError: (errors) => {
-        console.log('Login errors:', errors);
-      },
-      onSuccess: () => {
-        console.log('Login successful!');
-      }
-    });
+    onError: (errors) => console.log('Login errors:', errors),
+    onSuccess: () => {
+      console.log('Login successful!');
+      // force redirect manually
+      window.location.href = '/StudentDashboard';
+    }
+  });
   };
 
   return (
