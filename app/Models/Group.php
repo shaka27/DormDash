@@ -14,15 +14,15 @@ class Group extends Model
     protected $fillable = ['name', 'description']; 
 
     // Returns GroupMember pivot objects
-    public function members() 
+    public function members()
     {
-        return $this->hasMany(GroupMember::class);
+        return $this->hasMany(GroupMember::class, 'group_id');
     }
 
     // Each group has one chatroom (group messages only)
     public function chatroom()
     {
-        return $this->hasOne(Chatroom::class);
+        return $this->hasOne(Chatroom::class, 'group_id');
     }
 
      // Returns all users in the group directly

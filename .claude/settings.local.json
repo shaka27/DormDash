@@ -6,7 +6,8 @@
       "Bash(./vendor/bin/sail:*)",
       "Bash(php artisan:*)",
       "Bash(npm run build:*)",
-      "Bash(php -l:*)"
+      "Bash(php -l:*)",
+      "Read(//Users/rikusswart/Dev/**)"
     ],
     "deny": [],
     "ask": []

@@ -77,7 +77,16 @@ Route::middleware('auth')->group(function () {
         Route::delete('/events/{event}/rsvp', [App\Http\Controllers\EventController::class, 'cancelRsvp']);
         
         Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
+
+        // MESSAGE ROUTES
         Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
+        Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
+        Route::get('/messages/chatroom/{chatroomId}', [App\Http\Controllers\MessageController::class, 'showChatroom'])->name('messages.chatroom');
+        Route::get('/messages/direct/{userId}', [App\Http\Controllers\MessageController::class, 'showDirectMessages'])->name('messages.direct');
+
+        // GROUP ROUTES
+        Route::post('/groups', [App\Http\Controllers\GroupController::class, 'store'])->name('groups.store');
+
         Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
         Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');

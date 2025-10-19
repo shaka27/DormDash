@@ -73,6 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // MESSAGES protected routes
     Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
+    Route::get('/messages/residence-users', [App\Http\Controllers\MessageController::class, 'getResidenceUsers']);
+    Route::get('/messages/direct/{userId}', [App\Http\Controllers\MessageController::class, 'getDirectMessages']);
     Route::get('/chatrooms/{chatroomId}/messages', [App\Http\Controllers\MessageController::class, 'getChatroomMessages']);
     Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
     Route::get('/messages/{id}', [App\Http\Controllers\MessageController::class, 'show']);

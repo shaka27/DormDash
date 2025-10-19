@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Group;
 use App\Models\Message;
 use App\Models\Chatroom;
+use App\Models\User;
 use Inertia\Inertia;
 
 class MessageController extends Controller
@@ -18,11 +19,11 @@ class MessageController extends Controller
         $groups = Group::with([
             'chatroom',
             'chatroom.messages' => function($query) {
-                $query->with('sender:id,name')
+                $query->with('sender:id,first_name,last_name')
                       ->orderBy('created_at', 'desc')
                       ->take(1);
             },
-            'members.user:id,name'  // Get members through the GroupMember pivot model
+            'members.user:id,first_name,last_name'  // Get members through the GroupMember pivot model
         ])
         ->get()
         ->filter(function($group) use ($user) {
@@ -47,8 +48,53 @@ class MessageController extends Controller
         })
         ->values(); // Reset array keys
 
+        // Get direct message conversations (users the current user has messaged with)
+        $directMessageConversations = Message::where(function($query) use ($user) {
+            $query->where('sender_id', $user->id)
+                  ->orWhere('receiver_id', $user->id);
+        })
+        ->whereNull('chatroom_id')
+        ->with(['sender:id,first_name,last_name', 'receiver:id,first_name,last_name'])
+        ->get()
+        ->groupBy(function($message) use ($user) {
+            // Group by the other user's ID
+            return $message->sender_id === $user->id ? $message->receiver_id : $message->sender_id;
+        })
+        ->map(function($messages, $otherUserId) use ($user) {
+            $lastMessage = $messages->sortByDesc('created_at')->first();
+            $otherUser = $lastMessage->sender_id === $user->id ? $lastMessage->receiver : $lastMessage->sender;
+
+            return [
+                'id' => $otherUser->id,
+                'name' => $otherUser->name,
+                'email' => $otherUser->email,
+                'lastMessage' => $lastMessage->message,
+                'lastMessageTime' => $lastMessage->created_at->format('H:i'),
+                'unreadCount' => 0, // TODO: Implement unread count
+            ];
+        })
+        ->sortByDesc('lastMessageTime')
+        ->values();
+
+        // Get all users in the same residence (for new messages)
+        $residenceUsers = User::where('residence_id', $user->residence_id)
+            ->where('id', '!=', $user->id)
+            ->select('id', 'first_name', 'last_name', 'email')
+            ->orderBy('first_name')
+            ->get()
+            ->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name, // Uses the name accessor
+                    'email' => $user->email,
+                ];
+            });
+
         return inertia('Student_Dashboard/Messages', [
             'groups' => $groups,
+            'directMessages' => $directMessageConversations,
+            'residenceUsers' => $residenceUsers,
+            'canManageGroups' => $user->canManageGroups(),
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -60,7 +106,7 @@ class MessageController extends Controller
     public function getChatroomMessages($chatroomId)
     {
         $messages = Message::where('chatroom_id', $chatroomId)
-            ->with('sender:id,name')
+            ->with('sender:id,first_name,last_name')
             ->orderBy('created_at', 'asc')
             ->get()
             ->map(function($message) {
@@ -77,31 +123,142 @@ class MessageController extends Controller
         return response()->json($messages);
     }
 
-    // Store a newly created message
+    // Get users in the same residence for direct messaging
+    public function getResidenceUsers()
+    {
+        $user = auth()->user();
+
+        $users = User::where('residence_id', $user->residence_id)
+            ->where('id', '!=', $user->id)
+            ->select('id', 'first_name', 'last_name', 'email')
+            ->orderBy('first_name')
+            ->get()
+            ->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name, // Uses the name accessor
+                    'email' => $user->email,
+                ];
+            });
+
+        return response()->json($users);
+    }
+
+    // Get direct messages with a specific user
+    public function getDirectMessages($userId)
+    {
+        $currentUserId = auth()->id();
+
+        $messages = Message::where(function($query) use ($currentUserId, $userId) {
+            $query->where('sender_id', $currentUserId)
+                  ->where('receiver_id', $userId);
+        })
+        ->orWhere(function($query) use ($currentUserId, $userId) {
+            $query->where('sender_id', $userId)
+                  ->where('receiver_id', $currentUserId);
+        })
+        ->whereNull('chatroom_id')
+        ->with('sender:id,first_name,last_name')
+        ->orderBy('created_at', 'asc')
+        ->get()
+        ->map(function($message) {
+            return [
+                'id' => $message->id,
+                'sender_id' => $message->sender_id,
+                'sender' => $message->sender->name,
+                'message' => $message->message,
+                'timestamp' => $message->created_at->toISOString(),
+                'isOwn' => $message->sender_id === auth()->id(),
+            ];
+        });
+
+        return response()->json($messages);
+    }
+
+    // Store a newly created message (for web routes - Inertia)
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'chatroom_id' => 'required|exists:chatroom,id',
+            'chatroom_id' => 'nullable|exists:chatroom,id',
+            'receiver_id' => 'nullable|exists:users,id',
             'message' => 'required|string|max:5000',
         ]);
 
+        $chatroomId = $validated['chatroom_id'] ?? null;
+        $receiverId = $validated['receiver_id'] ?? null;
+
+        // Ensure either chatroom_id or receiver_id is provided, but not both
+        if ((!$chatroomId && !$receiverId) || ($chatroomId && $receiverId)) {
+            return back()->withErrors([
+                'message' => 'Message must be either a group message or a direct message, not both.'
+            ]);
+        }
+
         $message = Message::create([
             'sender_id' => auth()->id(),
-            'chatroom_id' => $validated['chatroom_id'],
+            'chatroom_id' => $chatroomId,
+            'receiver_id' => $receiverId,
             'message' => $validated['message'],
-            'receiver_id' => null, // Group message
         ]);
 
-        $message->load('sender:id,name');
+        return back();
+    }
 
-        return response()->json([
-            'id' => $message->id,
-            'sender_id' => $message->sender_id,
-            'sender' => $message->sender->name,
-            'message' => $message->message,
-            'timestamp' => $message->created_at->toISOString(),
-            'isOwn' => true,
-        ], 201);
+    // Show messages for a specific chatroom (for web routes - Inertia)
+    public function showChatroom($chatroomId)
+    {
+        $user = auth()->user();
+
+        // Verify user has access to this chatroom
+        $chatroom = Chatroom::findOrFail($chatroomId);
+
+        $messages = Message::where('chatroom_id', $chatroomId)
+            ->with('sender:id,first_name,last_name')
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function($message) {
+                return [
+                    'id' => $message->id,
+                    'sender_id' => $message->sender_id,
+                    'sender' => $message->sender->name,
+                    'message' => $message->message,
+                    'timestamp' => $message->created_at->toISOString(),
+                    'isOwn' => $message->sender_id === auth()->id(),
+                ];
+            });
+
+        return response()->json($messages);
+    }
+
+    // Show direct messages with a specific user (for web routes - Inertia)
+    public function showDirectMessages($userId)
+    {
+        $currentUserId = auth()->id();
+
+        $messages = Message::where(function($query) use ($currentUserId, $userId) {
+            $query->where('sender_id', $currentUserId)
+                  ->where('receiver_id', $userId);
+        })
+        ->orWhere(function($query) use ($currentUserId, $userId) {
+            $query->where('sender_id', $userId)
+                  ->where('receiver_id', $currentUserId);
+        })
+        ->whereNull('chatroom_id')
+        ->with('sender:id,first_name,last_name')
+        ->orderBy('created_at', 'asc')
+        ->get()
+        ->map(function($message) {
+            return [
+                'id' => $message->id,
+                'sender_id' => $message->sender_id,
+                'sender' => $message->sender->name,
+                'message' => $message->message,
+                'timestamp' => $message->created_at->toISOString(),
+                'isOwn' => $message->sender_id === auth()->id(),
+            ];
+        });
+
+        return response()->json($messages);
     }
 
     // Show a specific message

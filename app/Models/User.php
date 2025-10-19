@@ -140,4 +140,16 @@ class User extends Authenticatable
         return $this->first_name . ' ' . $this->last_name;
     }
 
+    // Check if user has a specific role
+    public function hasRole($roleName)
+    {
+        return $this->roles()->where('description', $roleName)->exists();
+    }
+
+    // Check if user can manage groups (Admin, HouseParent, or HouseCommittee)
+    public function canManageGroups()
+    {
+        return $this->hasRole('Admin') || $this->hasRole('HouseParent') || $this->hasRole('HouseCommittee');
+    }
+
 }
