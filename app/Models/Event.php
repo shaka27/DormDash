@@ -11,12 +11,18 @@ class Event extends Model
 
     protected $table = 'events';
 
-    protected $fillable = ['name', 'description', 'date', 'location']; 
+    protected $fillable = [
+        'name',
+        'description',
+        'date',
+        'location'
+    ];
 
-    public function attendees() 
+    public function attendees()
     {
-        return $this->belongsToMany(User::class, 'event_attendance')
-                    ->withPivot('RSVPStatus');
+        
+        return $this->belongsToMany(User::class, 'event_attendance', 'event_id', 'user_id')
+                    ->withPivot('RSVPStatus')
+                    ->withTimestamps();
     }
-
 }
