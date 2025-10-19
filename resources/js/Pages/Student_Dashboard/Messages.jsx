@@ -1,271 +1,80 @@
 // resources/js/Pages/Messages.jsx
-import React, { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Head, Link } from "@inertiajs/react";
+import axios from "axios";
 
-export default function Messages({ groups, messages }) {
+export default function Messages({ groups: initialGroups }) {
     const [selectedGroupId, setSelectedGroupId] = useState(null);
+    const [selectedChatroomId, setSelectedChatroomId] = useState(null);
     const [newMessage, setNewMessage] = useState("");
+    const [groupsData] = useState(initialGroups || []);
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const messagesEndRef = useRef(null);
 
-    // Dummy groups data
-    const [groupsData, setGroupsData] = useState(
-        groups || [
-            {
-                id: 1,
-                name: "House Committee",
-                description: "Official house committee discussions",
-                lastMessage: "Meeting scheduled for tomorrow",
-                lastMessageTime: "14:30",
-                unreadCount: 2,
-                members: 8,
-                avatar: "🏠",
-            },
-            {
-                id: 2,
-                name: "Study Group - Math",
-                description: "First-year mathematics study group",
-                lastMessage: "Can someone help with calculus?",
-                lastMessageTime: "12:15",
-                unreadCount: 5,
-                members: 12,
-                avatar: "📚",
-            },
-            {
-                id: 3,
-                name: "Sports Team",
-                description: "Residence rugby team",
-                lastMessage: "Practice at 16:00 today",
-                lastMessageTime: "10:45",
-                unreadCount: 0,
-                members: 15,
-                avatar: "🏉",
-            },
-            {
-                id: 4,
-                name: "Social Events",
-                description: "Planning fun activities",
-                lastMessage: "Braai this Saturday!",
-                lastMessageTime: "09:20",
-                unreadCount: 1,
-                members: 25,
-                avatar: "🎉",
-            },
-            {
-                id: 5,
-                name: "Maintenance Issues",
-                description: "Report and track maintenance",
-                lastMessage: "WiFi fixed in block A",
-                lastMessageTime: "Yesterday",
-                unreadCount: 0,
-                members: 6,
-                avatar: "🔧",
-            },
-        ]
-    );
+    // Scroll to bottom of messages
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
-    // Dummy messages data for each group
-    const messagesData = {
-        1: [
-            {
-                id: 1,
-                sender: "John Smith",
-                message:
-                    "Good morning everyone! Just a reminder about tomorrow's meeting at 18:00 in Common Room A.",
-                timestamp: "2024-09-05 08:30",
-                isOwn: false,
-                avatar: "JS",
-            },
-            {
-                id: 2,
-                sender: "You",
-                message:
-                    "Thanks for the reminder! Will we be discussing the new security measures?",
-                timestamp: "2024-09-05 08:45",
-                isOwn: true,
-                avatar: "ME",
-            },
-            {
-                id: 3,
-                sender: "Sarah Johnson",
-                message:
-                    "Yes, security measures will be on the agenda along with the budget review.",
-                timestamp: "2024-09-05 09:00",
-                isOwn: false,
-                avatar: "SJ",
-            },
-            {
-                id: 4,
-                sender: "Mike Davis",
-                message:
-                    "Can we also discuss the WiFi upgrade plans? Students have been asking about it.",
-                timestamp: "2024-09-05 14:30",
-                isOwn: false,
-                avatar: "MD",
-            },
-        ],
-        2: [
-            {
-                id: 1,
-                sender: "Emma Wilson",
-                message:
-                    "Hey everyone! Can someone help me with integration by parts? I'm stuck on question 5.",
-                timestamp: "2024-09-05 10:15",
-                isOwn: false,
-                avatar: "EW",
-            },
-            {
-                id: 2,
-                sender: "You",
-                message:
-                    "Sure! Integration by parts follows the formula: ∫u dv = uv - ∫v du. What specific part are you struggling with?",
-                timestamp: "2024-09-05 10:20",
-                isOwn: true,
-                avatar: "ME",
-            },
-            {
-                id: 3,
-                sender: "Tom Brown",
-                message:
-                    "I can help too! Let's meet in the study hall after lunch to go through it together.",
-                timestamp: "2024-09-05 11:30",
-                isOwn: false,
-                avatar: "TB",
-            },
-            {
-                id: 4,
-                sender: "Emma Wilson",
-                message:
-                    "That would be amazing! Thank you both so much 🙏",
-                timestamp: "2024-09-05 12:15",
-                isOwn: false,
-                avatar: "EW",
-            },
-        ],
-        3: [
-            {
-                id: 1,
-                sender: "Coach Williams",
-                message:
-                    "Team practice today at 16:00 on the main field. Please bring your boots and water bottles.",
-                timestamp: "2024-09-05 08:00",
-                isOwn: false,
-                avatar: "CW",
-            },
-            {
-                id: 2,
-                sender: "You",
-                message:
-                    "Will be there! Should we bring the new training equipment?",
-                timestamp: "2024-09-05 08:30",
-                isOwn: true,
-                avatar: "ME",
-            },
-            {
-                id: 3,
-                sender: "Coach Williams",
-                message:
-                    "Yes, bring everything. We'll be working on scrummaging techniques today.",
-                timestamp: "2024-09-05 10:45",
-                isOwn: false,
-                avatar: "CW",
-            },
-        ],
-        4: [
-            {
-                id: 1,
-                sender: "Lisa Chen",
-                message:
-                    "Braai this Saturday at 18:00 in the residence garden! 🔥🥩",
-                timestamp: "2024-09-05 07:00",
-                isOwn: false,
-                avatar: "LC",
-            },
-            {
-                id: 2,
-                sender: "Mark Taylor",
-                message:
-                    "Count me in! Should I bring my guitar for some music?",
-                timestamp: "2024-09-05 07:30",
-                isOwn: false,
-                avatar: "MT",
-            },
-            {
-                id: 3,
-                sender: "You",
-                message:
-                    "Great idea Mark! I'll bring some drinks. What should everyone else bring?",
-                timestamp: "2024-09-05 08:00",
-                isOwn: true,
-                avatar: "ME",
-            },
-            {
-                id: 4,
-                sender: "Lisa Chen",
-                message:
-                    "Perfect! I'll post a sign-up sheet on the notice board for food contributions.",
-                timestamp: "2024-09-05 09:20",
-                isOwn: false,
-                avatar: "LC",
-            },
-        ],
-        5: [
-            {
-                id: 1,
-                sender: "Maintenance Team",
-                message:
-                    "WiFi issues in Block A have been resolved. Please restart your devices if you're still experiencing problems.",
-                timestamp: "2024-09-04 15:30",
-                isOwn: false,
-                avatar: "MT",
-            },
-            {
-                id: 2,
-                sender: "You",
-                message: "Thank you! WiFi is working perfectly now.",
-                timestamp: "2024-09-04 16:00",
-                isOwn: true,
-                avatar: "ME",
-            },
-        ],
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    // Poll for new messages every 5 seconds
+    useEffect(() => {
+        if (!selectedChatroomId) return;
+
+        const interval = setInterval(() => {
+            fetchMessages(selectedChatroomId);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [selectedChatroomId]);
+
+    // Fetch messages for a chatroom
+    const fetchMessages = async (chatroomId) => {
+        try {
+            const response = await axios.get(`/api/chatrooms/${chatroomId}/messages`);
+            setMessages(response.data);
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
     };
 
     const selectedGroup = selectedGroupId
         ? groupsData.find((g) => g.id === selectedGroupId)
         : null;
-    const currentMessages = selectedGroupId
-        ? messagesData[selectedGroupId] || []
-        : [];
 
-    const handleGroupSelect = (groupId) => {
-        setSelectedGroupId(groupId);
-        setGroupsData((prevGroups) =>
-            prevGroups.map((group) =>
-                group.id === groupId ? { ...group, unreadCount: 0 } : group
-            )
-        );
+    const handleGroupSelect = async (group) => {
+        setSelectedGroupId(group.id);
+        setSelectedChatroomId(group.chatroom_id);
+
+        if (group.chatroom_id) {
+            setLoading(true);
+            await fetchMessages(group.chatroom_id);
+            setLoading(false);
+        } else {
+            setMessages([]);
+        }
     };
 
-    const handleSendMessage = (e) => {
+    const handleSendMessage = async (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !selectedGroupId) return;
+        if (!newMessage.trim() || !selectedChatroomId) return;
 
-        console.log(
-            `Sending message to group ${selectedGroupId}: ${newMessage}`
-        );
+        try {
+            const response = await axios.post('/api/messages', {
+                chatroom_id: selectedChatroomId,
+                message: newMessage
+            });
 
-        const newMsg = {
-            id: currentMessages.length + 1,
-            sender: "You",
-            message: newMessage,
-            timestamp: new Date()
-                .toISOString()
-                .slice(0, 16)
-                .replace("T", " "),
-            isOwn: true,
-            avatar: "ME",
-        };
-
-        setNewMessage("");
-        // In real app: push to backend, update messages
+            setMessages([...messages, response.data]);
+            setNewMessage("");
+        } catch (error) {
+            console.error('Error sending message:', error);
+            alert('Failed to send message. Please try again.');
+        }
     };
 
     const formatTime = (timestamp) => {
@@ -274,6 +83,11 @@ export default function Messages({ groups, messages }) {
             minute: "2-digit",
             hour12: false,
         });
+    };
+
+    const getInitials = (name) => {
+        if (!name) return "?";
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     };
 
     return (
@@ -334,12 +148,10 @@ export default function Messages({ groups, messages }) {
                             </div>
 
                             <div className="flex-1 overflow-y-auto">
-                                {groupsData.map((group) => (
+                                {groupsData.length > 0 ? groupsData.map((group) => (
                                     <div
                                         key={group.id}
-                                        onClick={() =>
-                                            handleGroupSelect(group.id)
-                                        }
+                                        onClick={() => handleGroupSelect(group)}
                                         className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
                                             selectedGroupId === group.id
                                                 ? "bg-purple-50 border-l-4 border-l-purple-500"
@@ -347,8 +159,8 @@ export default function Messages({ groups, messages }) {
                                         }`}
                                     >
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-2xl">
-                                                {group.avatar}
+                                            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-xl font-bold text-purple-600">
+                                                {getInitials(group.name)}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between">
@@ -356,18 +168,13 @@ export default function Messages({ groups, messages }) {
                                                         {group.name}
                                                     </h3>
                                                     <div className="flex items-center space-x-2">
-                                                        {group.unreadCount >
-                                                            0 && (
+                                                        {group.unreadCount > 0 && (
                                                             <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                                                {
-                                                                    group.unreadCount
-                                                                }
+                                                                {group.unreadCount}
                                                             </span>
                                                         )}
                                                         <span className="text-xs text-gray-500">
-                                                            {
-                                                                group.lastMessageTime
-                                                            }
+                                                            {group.lastMessageTime}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -380,7 +187,11 @@ export default function Messages({ groups, messages }) {
                                             </div>
                                         </div>
                                     </div>
-                                ))}
+                                )) : (
+                                    <div className="p-4 text-center text-gray-500">
+                                        <p>No groups available</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -391,8 +202,8 @@ export default function Messages({ groups, messages }) {
                                     {/* Chat Header */}
                                     <div className="p-4 border-b border-gray-200">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-xl">
-                                                {selectedGroup.avatar}
+                                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg font-bold text-purple-600">
+                                                {getInitials(selectedGroup.name)}
                                             </div>
                                             <div className="flex-1">
                                                 <h2 className="font-bold text-gray-900">
@@ -413,63 +224,75 @@ export default function Messages({ groups, messages }) {
 
                                     {/* Messages List */}
                                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                        {currentMessages.map((message) => (
-                                            <div
-                                                key={message.id}
-                                                className={`flex ${
-                                                    message.isOwn
-                                                        ? "justify-end"
-                                                        : "justify-start"
-                                                }`}
-                                            >
-                                                <div
-                                                    className={`max-w-xs lg:max-w-md ${
-                                                        message.isOwn
-                                                            ? "order-2"
-                                                            : "order-1"
-                                                    }`}
-                                                >
+                                        {loading ? (
+                                            <div className="flex items-center justify-center h-full">
+                                                <div className="text-gray-500">Loading messages...</div>
+                                            </div>
+                                        ) : messages.length > 0 ? (
+                                            <>
+                                                {messages.map((message) => (
                                                     <div
-                                                        className={`px-4 py-2 rounded-lg ${
+                                                        key={message.id}
+                                                        className={`flex ${
                                                             message.isOwn
-                                                                ? "bg-purple-600 text-white"
-                                                                : "bg-gray-200 text-gray-800"
+                                                                ? "justify-end"
+                                                                : "justify-start"
                                                         }`}
                                                     >
-                                                        {!message.isOwn && (
-                                                            <p className="text-xs font-semibold mb-1">
-                                                                {
-                                                                    message.sender
-                                                                }
+                                                        <div
+                                                            className={`max-w-xs lg:max-w-md ${
+                                                                message.isOwn
+                                                                    ? "order-2"
+                                                                    : "order-1"
+                                                            }`}
+                                                        >
+                                                            <div
+                                                                className={`px-4 py-2 rounded-lg ${
+                                                                    message.isOwn
+                                                                        ? "bg-purple-600 text-white"
+                                                                        : "bg-gray-200 text-gray-800"
+                                                                }`}
+                                                            >
+                                                                {!message.isOwn && (
+                                                                    <p className="text-xs font-semibold mb-1">
+                                                                        {message.sender}
+                                                                    </p>
+                                                                )}
+                                                                <p className="text-sm">
+                                                                    {message.message}
+                                                                </p>
+                                                            </div>
+                                                            <p
+                                                                className={`text-xs text-gray-500 mt-1 ${
+                                                                    message.isOwn
+                                                                        ? "text-right"
+                                                                        : "text-left"
+                                                                }`}
+                                                            >
+                                                                {formatTime(message.timestamp)}
                                                             </p>
-                                                        )}
-                                                        <p className="text-sm">
-                                                            {message.message}
-                                                        </p>
+                                                        </div>
+                                                        <div
+                                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold mx-2 ${
+                                                                message.isOwn
+                                                                    ? "order-1 bg-purple-300 text-purple-900"
+                                                                    : "order-2 bg-gray-300 text-gray-700"
+                                                            }`}
+                                                        >
+                                                            {getInitials(message.sender)}
+                                                        </div>
                                                     </div>
-                                                    <p
-                                                        className={`text-xs text-gray-500 mt-1 ${
-                                                            message.isOwn
-                                                                ? "text-right"
-                                                                : "text-left"
-                                                        }`}
-                                                    >
-                                                        {formatTime(
-                                                            message.timestamp
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div
-                                                    className={`w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-semibold mx-2 ${
-                                                        message.isOwn
-                                                            ? "order-1"
-                                                            : "order-2"
-                                                    }`}
-                                                >
-                                                    {message.avatar}
+                                                ))}
+                                                <div ref={messagesEndRef} />
+                                            </>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full">
+                                                <div className="text-center text-gray-500">
+                                                    <p className="text-4xl mb-2">💬</p>
+                                                    <p>No messages yet. Start the conversation!</p>
                                                 </div>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
 
                                     {/* Message Input */}
