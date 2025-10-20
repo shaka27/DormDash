@@ -3,28 +3,27 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Notification;
 use App\Models\User;
 use App\Models\Residence;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Notification>
- */
 class NotificationFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
-    public function definition(): array
+    protected $model = Notification::class;
+
+    public function definition()
     {
+        $residenceId = Residence::inRandomOrder()->value('id') ?? 1;
+        $userId = User::whereNotNull('residence_id')->inRandomOrder()->value('id') ?? User::inRandomOrder()->value('id') ?? 1;
+
         return [
-            'type'=>fake()->name(),
-            'content'=>fake()->realText(100),
-            'is_read'=>fake()->boolean(),
-            'user_id'=>\App\Models\User::inRandomOrder()->first()->id,
-            'recipient_id'=>\App\Models\User::inRandomOrder()->first()->id,
-            'residence_id'=>\App\Models\Residence::inRandomOrder()->first()->id,
+            'type' => $this->faker->randomElement(['announcement','technical','reminder','maintenance']),
+            'content' => $this->faker->sentence(12),
+            'residence_id' => $residenceId,
+            'user_id' => $userId,
+            'is_read' => $this->faker->boolean(20),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }
