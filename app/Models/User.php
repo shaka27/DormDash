@@ -28,7 +28,7 @@ class User extends Authenticatable
         'student_number',
         'residence_id',
         'room_id',
-    'bed_number',
+        'bed_number',
         'move_in_date',
         'expected_move_out',
         'emergency_contact_name',
@@ -138,6 +138,18 @@ class User extends Authenticatable
     public function getNameAttribute()
     {
         return $this->first_name . ' ' . $this->last_name;
+    }
+
+    // Check if user has a specific role
+    public function hasRole($roleName)
+    {
+        return $this->roles()->where('description', $roleName)->exists();
+    }
+
+    // Check if user can manage groups (Admin, HouseParent, or HouseCommittee)
+    public function canManageGroups()
+    {
+        return $this->hasRole('Admin') || $this->hasRole('HouseParent') || $this->hasRole('HouseCommittee');
     }
 
 }

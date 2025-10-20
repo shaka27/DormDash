@@ -24,7 +24,7 @@ return new class extends Migration
                   ->references('id')->on('events')
                   ->onDelete('cascade'); 
 
-            $table->string('status');
+            $table->string('RSVPStatus');
 
             $table->timestamps();
         });

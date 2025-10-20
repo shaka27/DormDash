@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\MaintenanceRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,6 +27,7 @@ Route::get('/events/upcoming/count', [EventController::class, 'upcommingEvents']
 Route::get('/vote/activeVotes/count', [VoteController::class, 'activeVotes']);
 Route::get('/events/upcoming', [EventController::class, 'upcoming']);
 Route::get('/notifications/recent', [NotificationController::class,'recentAnnouncements']);
+Route::get('/maintenance_requests/pendingRequest/count',[MaintenanceRequestController::class, 'pendingRequests']);
 
 // Protected routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
@@ -72,6 +74,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // MESSAGES protected routes
     Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index']);
+    Route::get('/messages/residence-users', [App\Http\Controllers\MessageController::class, 'getResidenceUsers']);
+    Route::get('/messages/direct/{userId}', [App\Http\Controllers\MessageController::class, 'getDirectMessages']);
+    Route::get('/chatrooms/{chatroomId}/messages', [App\Http\Controllers\MessageController::class, 'getChatroomMessages']);
     Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store']);
     Route::get('/messages/{id}', [App\Http\Controllers\MessageController::class, 'show']);
     Route::put('/messages/{id}', [App\Http\Controllers\MessageController::class, 'update']);
@@ -93,6 +98,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user', [UserController::class, 'store']);
     Route::put('/user/{id}', [UserController::class, 'update']);
     Route::delete('/user/{id}', [UserController::class, 'destroy']);
+   
 });
 
 //tESTING the CORS setup

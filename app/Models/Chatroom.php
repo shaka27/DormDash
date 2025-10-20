@@ -14,6 +14,7 @@ class Chatroom extends Model
         'name',
         'description',
         'group_id',  // The group this chatroom belongs to
+        'residence_id',  // The residence this chatroom belongs to
     ];
 
     // The group that owns this chatroom (null if its a private chatroom)

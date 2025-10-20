@@ -40,11 +40,6 @@ class MaintenanceRequestController extends Controller
         ]);
     }
 
-    public function create()
-    {
-        return Inertia::render('Maintenance/CreateMaintenanceRequest');
-    }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -52,9 +47,13 @@ class MaintenanceRequestController extends Controller
             'description' => 'nullable|string',
             'priority' => 'required|in:low,medium,high',
             'category' => 'required|string',
+            'room_number' => 'required|string|max:50', // Added room number field
         ]);
 
         $user = Auth::user();
+
+        // Use the provided room number or fall back to user's room
+        $roomNumber = $validated['room_number'] ?? $user->room->number ?? 'Unknown';
 
         $user->maintenanceRequests()->create([
             'issue' => $validated['issue'],
@@ -92,5 +91,15 @@ class MaintenanceRequestController extends Controller
         $maintenanceRequest->update($updateData);
 
         return redirect()->back()->with('success', 'Maintenance request updated successfully.');
+    }
+
+    public function pendingRequests()
+    {
+        $user = Auth::user();
+
+        $count = MaintenanceRequest::where('completed_at', null)
+                    ->count();
+
+        return response()->json(['count' => $count]);
     }
 }

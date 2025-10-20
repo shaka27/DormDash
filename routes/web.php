@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MaintenanceRequestController;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ResidenceController;
@@ -110,6 +114,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/notifications/{notification}', [App\Http\Controllers\NotificationController::class, 'show'])->name('notifications.show');
         Route::post('/notifications', [App\Http\Controllers\NotificationController::class, 'store'])->name('notifications.store');
         Route::put('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'update'])->name('notifications.update');
+        Route::get('/notifications/count', [App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unreadCount');
         Route::delete('/notifications/{id}', [App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
         
         Route::get('/voting-centre', [App\Http\Controllers\VoteController::class, 'index'])->name('voting-centre.index');
@@ -118,24 +123,44 @@ Route::middleware('auth')->group(function () {
         Route::put('/voting-centre/{vote}', [App\Http\Controllers\VoteController::class, 'update'])->name('voting-centre.update');
         Route::delete('/voting-centre/{vote}', [App\Http\Controllers\VoteController::class, 'destroy'])->name('voting-centre.destroy');
         Route::post('/voting-centre/{vote}/submit', [App\Http\Controllers\VoteController::class, 'submitVote'])->name('voting-centre.submit');
+        
+        // EVENT ROUTES
         Route::get('/events', [App\Http\Controllers\EventController::class, 'index'])->name('events.index');
         Route::get('/events/create', [App\Http\Controllers\EventController::class, 'create'])->name('events.create');
         Route::post('/events', [App\Http\Controllers\EventController::class, 'store'])->name('events.store');
+        Route::get('/events/{event}/edit', [App\Http\Controllers\EventController::class, 'edit'])->name('events.edit');
+        Route::put('/events/{event}', [App\Http\Controllers\EventController::class, 'update'])->name('events.update');
+        Route::delete('/events/{event}', [App\Http\Controllers\EventController::class, 'destroy'])->name('events.destroy');
         Route::get('/events/{event}/event-details', [App\Http\Controllers\EventController::class, 'getEventDetailsPage'])->name('events.details');
+        Route::post('/events/{event}/rsvp', [App\Http\Controllers\EventController::class, 'rsvp']);
+        Route::delete('/events/{event}/rsvp', [App\Http\Controllers\EventController::class, 'cancelRsvp']);
+        
         Route::get('/StudentLayout', fn() => Inertia::render('Student_Dashboard/StudentLayout'));
+
+        // MESSAGE ROUTES
         Route::get('/messages', [App\Http\Controllers\MessageController::class, 'index'])->name('messages.index');
+        Route::post('/messages', [App\Http\Controllers\MessageController::class, 'store'])->name('messages.store');
+        Route::get('/messages/chatroom/{chatroomId}', [App\Http\Controllers\MessageController::class, 'showChatroom'])->name('messages.chatroom');
+        Route::get('/messages/direct/{userId}', [App\Http\Controllers\MessageController::class, 'showDirectMessages'])->name('messages.direct');
+
+        // GROUP ROUTES
+        Route::post('/groups', [App\Http\Controllers\GroupController::class, 'store'])->name('groups.store');
+
         Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'index'])->name('profile.index');
         Route::get('/profile/edit', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
 
-        // Residence Management
-        Route::get('/residence-management', [ResidenceManagementController::class, 'index'])->name('residence-management.index');
-        Route::post('/residence-management/access', [ResidenceManagementController::class, 'addAccess'])->name('residence-management.access.add');
-        Route::post('/residence-management/access/import', [ResidenceManagementController::class, 'importAccess'])->name('residence-management.access.import');
-        Route::delete('/residence-management/access/{id}', [ResidenceManagementController::class, 'deleteAccess'])->name('residence-management.access.delete');
+        Route::get('/residence-management', [App\Http\Controllers\ResidenceManagementController::class, 'index'])->name('residence-management.index');
 
-        // User Management
-        Route::get('/user-management', fn () => Inertia::render('Student_Dashboard/UserManagement'))->name('user-management.index');
+        // Residence Management - Only for Admin, HouseParent, HouseCommittee
+        Route::post('/residence-management/access', [App\Http\Controllers\ResidenceManagementController::class, 'addAccess'])->name('residence-management.access.add');
+        Route::post('/residence-management/access/import', [App\Http\Controllers\ResidenceManagementController::class, 'importAccess'])->name('residence-management.access.import');
+        Route::delete('/residence-management/access/{id}', [App\Http\Controllers\ResidenceManagementController::class, 'deleteAccess'])->name('residence-management.access.delete');
+
+        /* ==========================
+         * USER MANAGEMENT ROUTES
+         * ========================== */
+        Route::get('/user-management', fn() => Inertia::render('Student_Dashboard/UserManagement'))->name('user-management.index');
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');

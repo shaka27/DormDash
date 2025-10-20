@@ -9,8 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Search, Plus, Filter, User, MapPin, Clock, AlertCircle, Wrench, CheckCircle, BarChart3, Download } from "lucide-react"
+import { Search, Filter, User, MapPin, Clock, AlertCircle, Wrench, CheckCircle, BarChart3, Download, Mail } from "lucide-react"
 import { router } from '@inertiajs/react'
 import { toast } from 'sonner'
 
@@ -64,7 +63,6 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null)
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [activeView, setActiveView] = useState<"list" | "grid">("grid")
 
   // Get unique residences from requests
   const residences: Residence[] = Array.from(
@@ -123,6 +121,7 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
         onSuccess: () => {
           toast.success('Maintenance request updated successfully!')
           setIsDetailsModalOpen(false)
+          router.reload()
         },
         onError: (errors) => {
           toast.error('Failed to update request. Please try again.')
@@ -148,7 +147,8 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
           request.issue.toLowerCase().includes(searchTerm.toLowerCase()) ||
           request.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
           request.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          request.room?.number.toLowerCase().includes(searchTerm.toLowerCase())
+          request.room?.number.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          request.room?.residence?.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -213,29 +213,38 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
           </div>
         </div>
 
-        <div className="space-y-2 text-sm text-gray-600">
+        <div className="space-y-3 text-sm text-gray-600">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <User className="h-4 w-4 mr-2" />
               <span>{request.user?.name}</span>
             </div>
             <div className="flex items-center">
-              <MapPin className="h-4 w-4 mr-2" />
-              <span>{request.room?.residence?.name} - {request.room?.number}</span>
+              <Mail className="h-4 w-4 mr-2" />
+              <span className="text-xs">{request.user?.email}</span>
             </div>
           </div>
+          
           <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <MapPin className="h-4 w-4 mr-2" />
+              <span>{request.room?.residence?.name} - Room {request.room?.number}</span>
+            </div>
             <div className="flex items-center">
               <Clock className="h-4 w-4 mr-2" />
               <span>{formatDate(request.reported_at)}</span>
             </div>
-            {request.assigned_staff && (
-              <Badge variant="secondary" className="text-xs">
-                {request.assigned_staff}
-              </Badge>
-            )}
           </div>
         </div>
+
+        {request.assigned_staff && (
+          <div className="mt-3 flex items-center justify-between text-sm">
+            <span className="text-gray-600">Assigned to:</span>
+            <Badge variant="secondary" className="text-xs">
+              {request.assigned_staff}
+            </Badge>
+          </div>
+        )}
 
         <div className="flex space-x-2 mt-4">
           <Button
@@ -257,7 +266,7 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
               setIsDetailsModalOpen(true)
             }}
           >
-            Manage
+            Manage Request
           </Button>
         </div>
       </CardContent>
@@ -315,7 +324,7 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
                             <span>{selectedRequest.user?.name}</span>
                           </div>
                           <div className="flex items-center">
-                            <span className="text-gray-500 mr-2">📧</span>
+                            <Mail className="h-4 w-4 mr-2 text-gray-500" />
                             <span>{selectedRequest.user?.email}</span>
                           </div>
                         </div>
@@ -376,10 +385,10 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
                         value={status} 
                         onValueChange={(value: string) => setStatus(value as RequestStatus)}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="bg-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white">
                           <SelectItem value="pending">Pending</SelectItem>
                           <SelectItem value="in-progress">In Progress</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
@@ -502,10 +511,10 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Residence</label>
             <Select value={residenceFilter} onValueChange={setResidenceFilter}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-white">
                 <SelectValue placeholder="All residences" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="all">All residences</SelectItem>
                 {residences.map((residence) => (
                   <SelectItem key={residence.id} value={residence.name}>
@@ -519,10 +528,10 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
           <div>
             <label className="text-sm font-medium text-gray-700 mb-2 block">Sort By</label>
             <Select value={sortBy} onValueChange={(value: "newest" | "oldest" | "priority") => setSortBy(value)}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white">
                 <SelectItem value="newest">Newest First</SelectItem>
                 <SelectItem value="oldest">Oldest First</SelectItem>
                 <SelectItem value="priority">Priority (High → Low)</SelectItem>
@@ -558,18 +567,17 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
                 <Wrench className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Maintenance Dashboard</h1>
-                <p className="text-gray-600 mt-1">Manage all maintenance requests across residences</p>
+                <h1 className="text-3xl font-bold text-gray-900">Maintenance Management Dashboard</h1>
+                <p className="text-gray-600 mt-1">Manage all student maintenance requests across residences</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-3">
               <Button variant="outline" className="flex items-center">
                 <Download className="h-4 w-4 mr-2" />
-                Export
+                Export Reports
               </Button>
               <Button 
-                onClick={() => router.visit('/admin/maintenance')}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <BarChart3 className="h-4 w-4 mr-2" />
@@ -668,10 +676,10 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <CardTitle className="text-2xl font-bold text-gray-900">
-                      Maintenance Requests ({filteredRequests.length})
+                      Student Maintenance Requests ({filteredRequests.length})
                     </CardTitle>
                     <CardDescription>
-                      Manage and track all maintenance requests across all residences
+                      Manage and track all student maintenance requests across all residences
                     </CardDescription>
                   </div>
                   
@@ -679,19 +687,12 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
                     <div className="flex-1 relative min-w-[300px]">
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                       <Input
-                        placeholder="Search requests, students, or rooms..."
+                        placeholder="Search requests, students, rooms, or residences..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pl-10"
                       />
                     </div>
-                    
-                    <Button
-                      variant="outline"
-                      onClick={() => setActiveView(activeView === "grid" ? "list" : "grid")}
-                    >
-                      {activeView === "grid" ? "List View" : "Grid View"}
-                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -706,16 +707,12 @@ const AdminMaintenancePage: React.FC<AdminMaintenancePageProps> = ({ requests })
                     <p className="text-gray-600 max-w-md mx-auto">
                       {searchTerm || statusFilter.length > 0 || urgencyFilter.length > 0 || residenceFilter !== "all"
                         ? "Try adjusting your filters or search terms to see more results."
-                        : "No maintenance requests have been submitted yet."
+                        : "No student maintenance requests have been submitted yet."
                       }
                     </p>
                   </div>
                 ) : (
-                  <div className={`grid gap-4 ${
-                    activeView === "grid" 
-                      ? "grid-cols-1 md:grid-cols-2 xl:grid-cols-3" 
-                      : "grid-cols-1"
-                  }`}>
+                  <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
                     {filteredRequests.map((request) => (
                       <RequestCard key={request.id} request={request} />
                     ))}

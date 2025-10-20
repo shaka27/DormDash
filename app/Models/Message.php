@@ -15,10 +15,11 @@ class Message extends Model
 
     //Each message will belong to a chatroom so we add chatroom_id FK to  Message Model/Table
     protected $fillable = [
-        'sender_id', 
-        'receiver_id', // (FK) If receiver_id is set - it’s a private message and is nullable.
-        'message', 
-        'chatroom_id'  // (FK) If chatroom_id is set - it’s a group message and is nullable.
+        'sender_id',
+        'receiver_id', // (FK) If receiver_id is set - it's a private message and is nullable.
+        'message',
+        'chatroom_id',  // (FK) If chatroom_id is set - it's a group message and is nullable.
+        'read_at'  // Timestamp when message was read
     ];
 
     

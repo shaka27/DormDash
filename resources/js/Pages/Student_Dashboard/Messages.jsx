@@ -1,271 +1,207 @@
 // resources/js/Pages/Messages.jsx
-import React, { useState } from "react";
-import { Head, Link } from "@inertiajs/react";
+import { useState, useEffect, useRef } from "react";
+import { Head, useForm, router } from "@inertiajs/react";
+import axios from "axios";
+import StudentLayout from "./StudentLayout";
 
-export default function Messages({ groups, messages }) {
+export default function Messages({ groups: initialGroups, directMessages: initialDirectMessages, residenceUsers: initialResidenceUsers, canManageGroups, user }) {
+    const [activeTab, setActiveTab] = useState('groups'); // 'groups' or 'direct'
     const [selectedGroupId, setSelectedGroupId] = useState(null);
-    const [newMessage, setNewMessage] = useState("");
+    const [selectedChatroomId, setSelectedChatroomId] = useState(null);
+    const [selectedUserId, setSelectedUserId] = useState(null);
+    const [selectedUserName, setSelectedUserName] = useState(null);
+    const [groupsData] = useState(initialGroups || []);
+    const [directMessagesData] = useState(initialDirectMessages || []);
+    const [messages, setMessages] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [showNewMessageModal, setShowNewMessageModal] = useState(false);
+    const [showCreateGroupModal, setShowCreateGroupModal] = useState(false);
+    const [residenceUsers] = useState(initialResidenceUsers || []);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [selectedMembers, setSelectedMembers] = useState([]);
+    const messagesEndRef = useRef(null);
 
-    // Dummy groups data
-    const [groupsData, setGroupsData] = useState(
-        groups || [
-            {
-                id: 1,
-                name: "House Committee",
-                description: "Official house committee discussions",
-                lastMessage: "Meeting scheduled for tomorrow",
-                lastMessageTime: "14:30",
-                unreadCount: 2,
-                members: 8,
-                avatar: "🏠",
-            },
-            {
-                id: 2,
-                name: "Study Group - Math",
-                description: "First-year mathematics study group",
-                lastMessage: "Can someone help with calculus?",
-                lastMessageTime: "12:15",
-                unreadCount: 5,
-                members: 12,
-                avatar: "📚",
-            },
-            {
-                id: 3,
-                name: "Sports Team",
-                description: "Residence rugby team",
-                lastMessage: "Practice at 16:00 today",
-                lastMessageTime: "10:45",
-                unreadCount: 0,
-                members: 15,
-                avatar: "🏉",
-            },
-            {
-                id: 4,
-                name: "Social Events",
-                description: "Planning fun activities",
-                lastMessage: "Braai this Saturday!",
-                lastMessageTime: "09:20",
-                unreadCount: 1,
-                members: 25,
-                avatar: "🎉",
-            },
-            {
-                id: 5,
-                name: "Maintenance Issues",
-                description: "Report and track maintenance",
-                lastMessage: "WiFi fixed in block A",
-                lastMessageTime: "Yesterday",
-                unreadCount: 0,
-                members: 6,
-                avatar: "🔧",
-            },
-        ]
-    );
+    // Use Inertia form for message input state
+    const { data, setData, processing } = useForm({
+        message: ''
+    });
 
-    // Dummy messages data for each group
-    const messagesData = {
-        1: [
-            {
-                id: 1,
-                sender: "John Smith",
-                message:
-                    "Good morning everyone! Just a reminder about tomorrow's meeting at 18:00 in Common Room A.",
-                timestamp: "2024-09-05 08:30",
-                isOwn: false,
-                avatar: "JS",
-            },
-            {
-                id: 2,
-                sender: "You",
-                message:
-                    "Thanks for the reminder! Will we be discussing the new security measures?",
-                timestamp: "2024-09-05 08:45",
-                isOwn: true,
-                avatar: "ME",
-            },
-            {
-                id: 3,
-                sender: "Sarah Johnson",
-                message:
-                    "Yes, security measures will be on the agenda along with the budget review.",
-                timestamp: "2024-09-05 09:00",
-                isOwn: false,
-                avatar: "SJ",
-            },
-            {
-                id: 4,
-                sender: "Mike Davis",
-                message:
-                    "Can we also discuss the WiFi upgrade plans? Students have been asking about it.",
-                timestamp: "2024-09-05 14:30",
-                isOwn: false,
-                avatar: "MD",
-            },
-        ],
-        2: [
-            {
-                id: 1,
-                sender: "Emma Wilson",
-                message:
-                    "Hey everyone! Can someone help me with integration by parts? I'm stuck on question 5.",
-                timestamp: "2024-09-05 10:15",
-                isOwn: false,
-                avatar: "EW",
-            },
-            {
-                id: 2,
-                sender: "You",
-                message:
-                    "Sure! Integration by parts follows the formula: ∫u dv = uv - ∫v du. What specific part are you struggling with?",
-                timestamp: "2024-09-05 10:20",
-                isOwn: true,
-                avatar: "ME",
-            },
-            {
-                id: 3,
-                sender: "Tom Brown",
-                message:
-                    "I can help too! Let's meet in the study hall after lunch to go through it together.",
-                timestamp: "2024-09-05 11:30",
-                isOwn: false,
-                avatar: "TB",
-            },
-            {
-                id: 4,
-                sender: "Emma Wilson",
-                message:
-                    "That would be amazing! Thank you both so much 🙏",
-                timestamp: "2024-09-05 12:15",
-                isOwn: false,
-                avatar: "EW",
-            },
-        ],
-        3: [
-            {
-                id: 1,
-                sender: "Coach Williams",
-                message:
-                    "Team practice today at 16:00 on the main field. Please bring your boots and water bottles.",
-                timestamp: "2024-09-05 08:00",
-                isOwn: false,
-                avatar: "CW",
-            },
-            {
-                id: 2,
-                sender: "You",
-                message:
-                    "Will be there! Should we bring the new training equipment?",
-                timestamp: "2024-09-05 08:30",
-                isOwn: true,
-                avatar: "ME",
-            },
-            {
-                id: 3,
-                sender: "Coach Williams",
-                message:
-                    "Yes, bring everything. We'll be working on scrummaging techniques today.",
-                timestamp: "2024-09-05 10:45",
-                isOwn: false,
-                avatar: "CW",
-            },
-        ],
-        4: [
-            {
-                id: 1,
-                sender: "Lisa Chen",
-                message:
-                    "Braai this Saturday at 18:00 in the residence garden! 🔥🥩",
-                timestamp: "2024-09-05 07:00",
-                isOwn: false,
-                avatar: "LC",
-            },
-            {
-                id: 2,
-                sender: "Mark Taylor",
-                message:
-                    "Count me in! Should I bring my guitar for some music?",
-                timestamp: "2024-09-05 07:30",
-                isOwn: false,
-                avatar: "MT",
-            },
-            {
-                id: 3,
-                sender: "You",
-                message:
-                    "Great idea Mark! I'll bring some drinks. What should everyone else bring?",
-                timestamp: "2024-09-05 08:00",
-                isOwn: true,
-                avatar: "ME",
-            },
-            {
-                id: 4,
-                sender: "Lisa Chen",
-                message:
-                    "Perfect! I'll post a sign-up sheet on the notice board for food contributions.",
-                timestamp: "2024-09-05 09:20",
-                isOwn: false,
-                avatar: "LC",
-            },
-        ],
-        5: [
-            {
-                id: 1,
-                sender: "Maintenance Team",
-                message:
-                    "WiFi issues in Block A have been resolved. Please restart your devices if you're still experiencing problems.",
-                timestamp: "2024-09-04 15:30",
-                isOwn: false,
-                avatar: "MT",
-            },
-            {
-                id: 2,
-                sender: "You",
-                message: "Thank you! WiFi is working perfectly now.",
-                timestamp: "2024-09-04 16:00",
-                isOwn: true,
-                avatar: "ME",
-            },
-        ],
+    // Use Inertia form for group creation
+    const { data: groupData, setData: setGroupData, post: postGroup, processing: processingGroup, reset: resetGroup, errors: groupErrors } = useForm({
+        name: '',
+        description: '',
+        member_ids: []
+    });
+
+    // Scroll to bottom of messages
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    // Poll for new messages every 5 seconds
+    useEffect(() => {
+        if (!selectedChatroomId && !selectedUserId) return;
+
+        const interval = setInterval(() => {
+            if (selectedChatroomId) {
+                fetchMessages(selectedChatroomId);
+            } else if (selectedUserId) {
+                fetchDirectMessages(selectedUserId);
+            }
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [selectedChatroomId, selectedUserId]);
+
+    // Fetch messages for a chatroom (using web routes now)
+    const fetchMessages = async (chatroomId) => {
+        try {
+            const response = await axios.get(`/messages/chatroom/${chatroomId}`);
+            setMessages(response.data);
+        } catch (error) {
+            console.error('Error fetching messages:', error);
+        }
+    };
+
+    // Fetch direct messages with a user (using web routes now)
+    const fetchDirectMessages = async (userId) => {
+        try {
+            const response = await axios.get(`/messages/direct/${userId}`);
+            setMessages(response.data);
+        } catch (error) {
+            console.error('Error fetching direct messages:', error);
+        }
     };
 
     const selectedGroup = selectedGroupId
         ? groupsData.find((g) => g.id === selectedGroupId)
         : null;
-    const currentMessages = selectedGroupId
-        ? messagesData[selectedGroupId] || []
-        : [];
 
-    const handleGroupSelect = (groupId) => {
-        setSelectedGroupId(groupId);
-        setGroupsData((prevGroups) =>
-            prevGroups.map((group) =>
-                group.id === groupId ? { ...group, unreadCount: 0 } : group
-            )
-        );
+    const handleGroupSelect = async (group) => {
+        setSelectedGroupId(group.id);
+        setSelectedChatroomId(group.chatroom_id);
+        setSelectedUserId(null);
+        setSelectedUserName(null);
+
+        if (group.chatroom_id) {
+            setLoading(true);
+            await fetchMessages(group.chatroom_id);
+            setLoading(false);
+        } else {
+            setMessages([]);
+        }
+    };
+
+    const handleUserSelect = async (user) => {
+        setSelectedUserId(user.id);
+        setSelectedUserName(user.name);
+        setSelectedGroupId(null);
+        setSelectedChatroomId(null);
+        setShowNewMessageModal(false);
+        setSearchQuery("");
+
+        setLoading(true);
+        await fetchDirectMessages(user.id);
+        setLoading(false);
+    };
+
+    const handleDirectMessageSelect = async (conversation) => {
+        setSelectedUserId(conversation.id);
+        setSelectedUserName(conversation.name);
+        setSelectedGroupId(null);
+        setSelectedChatroomId(null);
+
+        setLoading(true);
+        await fetchDirectMessages(conversation.id);
+        setLoading(false);
+    };
+
+    const handleNewMessage = () => {
+        setShowNewMessageModal(true);
+    };
+
+    const handleCreateGroup = () => {
+        setShowCreateGroupModal(true);
+        resetGroup();
+        setSelectedMembers([]);
+    };
+
+    const handleMemberToggle = (userId) => {
+        setSelectedMembers(prev => {
+            if (prev.includes(userId)) {
+                return prev.filter(id => id !== userId);
+            } else {
+                return [...prev, userId];
+            }
+        });
+    };
+
+    const handleSubmitGroup = (e) => {
+        e.preventDefault();
+
+        // Update the form data with selected members
+        setGroupData('member_ids', selectedMembers);
+
+        // Use router.post to have full control over the data
+        router.post('/groups', {
+            name: groupData.name,
+            description: groupData.description,
+            member_ids: selectedMembers
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowCreateGroupModal(false);
+                resetGroup();
+                setSelectedMembers([]);
+                router.reload();
+            },
+            onError: (errors) => {
+                console.error('Error creating group:', errors);
+            }
+        });
     };
 
     const handleSendMessage = (e) => {
         e.preventDefault();
-        if (!newMessage.trim() || !selectedGroupId) return;
+        if (!data.message.trim()) return;
+        if (!selectedChatroomId && !selectedUserId) return;
 
-        console.log(
-            `Sending message to group ${selectedGroupId}: ${newMessage}`
-        );
-
-        const newMsg = {
-            id: currentMessages.length + 1,
-            sender: "You",
-            message: newMessage,
-            timestamp: new Date()
-                .toISOString()
-                .slice(0, 16)
-                .replace("T", " "),
-            isOwn: true,
-            avatar: "ME",
+        // Prepare the payload - ensure only one of chatroom_id or receiver_id is set
+        // Build object conditionally to avoid sending both
+        const messageData = {
+            message: data.message
         };
 
-        setNewMessage("");
-        // In real app: push to backend, update messages
+        if (selectedChatroomId) {
+            messageData.chatroom_id = selectedChatroomId;
+        } else if (selectedUserId) {
+            messageData.receiver_id = selectedUserId;
+        }
+
+        console.log('Sending message:', { selectedChatroomId, selectedUserId, messageData });
+
+        // Use router.post instead of the form's post method for more control
+        router.post('/messages', messageData, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Clear the message input
+                setData('message', '');
+                // Refetch messages to show the new one
+                if (selectedChatroomId) {
+                    fetchMessages(selectedChatroomId);
+                } else if (selectedUserId) {
+                    fetchDirectMessages(selectedUserId);
+                }
+            },
+            onError: (errors) => {
+                console.error('Error sending message:', errors);
+                alert('Failed to send message. Please try again.');
+            }
+        });
     };
 
     const formatTime = (timestamp) => {
@@ -276,70 +212,90 @@ export default function Messages({ groups, messages }) {
         });
     };
 
+    const getInitials = (name) => {
+        if (!name) return "?";
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+    };
+
+    const filteredUsers = residenceUsers.filter(user =>
+        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
     return (
-        <div className="min-h-screen bg-gray-100">
+        <StudentLayout>
             <Head title="Messages" />
 
-            {/* Messages Header */}
-            <div className="bg-white shadow-sm border-b border-gray-200">
-                <div className="px-6 py-4">
-                    <div className="flex items-center space-x-3 mb-3">
-                        <span className="text-2xl">💬</span>
-                        <div>
-                            <h1 className="text-xl font-bold text-gray-900">
-                                Messages
-                            </h1>
-                            <p className="text-sm text-gray-600">
-                                Residence Group Communications
-                            </p>
-                        </div>
+            {/* Page Header */}
+            <div className="bg-white rounded shadow-sm p-6 mb-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
+                        <p className="text-gray-600">Residence Group Communications</p>
                     </div>
-                    <Link
-                        href="/StudentDashboard"
-                        className="flex items-center space-x-2 text-gray-600 hover:text-purple-600 transition-colors"
-                    >
-                        <svg
-                            className="w-5 h-5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+                    <div className="flex items-center space-x-3">
+                        {canManageGroups && (
+                            <button
+                                onClick={handleCreateGroup}
+                                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                <span>Create Group</span>
+                            </button>
+                        )}
+                        <button
+                            onClick={handleNewMessage}
+                            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M15 19l-7-7 7-7"
-                            />
-                        </svg>
-                        <span className="text-sm font-medium">
-                            Back to Dashboard
-                        </span>
-                    </Link>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span>New Message</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Main Messages Container */}
-            <div className="h-screen">
-                <div className="h-full bg-white mx-4 mt-4 rounded-lg shadow-sm overflow-hidden">
-                    <div className="flex h-full">
-                        {/* Groups Sidebar */}
-                        <div className="w-1/3 border-r border-gray-200 flex flex-col">
-                            <div className="p-4 border-b border-gray-200">
-                                <h2 className="text-lg font-semibold text-gray-900">
-                                    Groups
-                                </h2>
-                                <p className="text-sm text-gray-600">
-                                    Select a group to start messaging
-                                </p>
+            <div className="bg-white rounded shadow-sm overflow-hidden" style={{ height: 'calc(100vh - 250px)' }}>
+                <div className="flex h-full">
+                    {/* Sidebar with Tabs */}
+                    <div className="w-1/3 border-r border-gray-200 flex flex-col">
+                            {/* Tabs Header */}
+                            <div className="border-b border-gray-200">
+                                <div className="flex">
+                                    <button
+                                        onClick={() => setActiveTab('groups')}
+                                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                                            activeTab === 'groups'
+                                                ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
+                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        Groups ({groupsData.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('direct')}
+                                        className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                                            activeTab === 'direct'
+                                                ? 'text-purple-600 border-b-2 border-purple-600 bg-purple-50'
+                                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        Direct ({directMessagesData.length})
+                                    </button>
+                                </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto">
-                                {groupsData.map((group) => (
+                            {/* Groups Tab Content */}
+                            {activeTab === 'groups' && (
+                                <div className="flex-1 overflow-y-auto">
+                                    {groupsData.length > 0 ? groupsData.map((group) => (
                                     <div
                                         key={group.id}
-                                        onClick={() =>
-                                            handleGroupSelect(group.id)
-                                        }
+                                        onClick={() => handleGroupSelect(group)}
                                         className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
                                             selectedGroupId === group.id
                                                 ? "bg-purple-50 border-l-4 border-l-purple-500"
@@ -347,8 +303,8 @@ export default function Messages({ groups, messages }) {
                                         }`}
                                     >
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-2xl">
-                                                {group.avatar}
+                                            <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-xl font-bold text-purple-600">
+                                                {getInitials(group.name)}
                                             </div>
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between">
@@ -356,18 +312,13 @@ export default function Messages({ groups, messages }) {
                                                         {group.name}
                                                     </h3>
                                                     <div className="flex items-center space-x-2">
-                                                        {group.unreadCount >
-                                                            0 && (
+                                                        {group.unreadCount > 0 && (
                                                             <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                                                                {
-                                                                    group.unreadCount
-                                                                }
+                                                                {group.unreadCount}
                                                             </span>
                                                         )}
                                                         <span className="text-xs text-gray-500">
-                                                            {
-                                                                group.lastMessageTime
-                                                            }
+                                                            {group.lastMessageTime}
                                                         </span>
                                                     </div>
                                                 </div>
@@ -380,28 +331,85 @@ export default function Messages({ groups, messages }) {
                                             </div>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+                                )) : (
+                                    <div className="p-4 text-center text-gray-500">
+                                        <p>No groups available</p>
+                                    </div>
+                                )}
+                                </div>
+                            )}
+
+                            {/* Direct Messages Tab Content */}
+                            {activeTab === 'direct' && (
+                                <div className="flex-1 overflow-y-auto">
+                                    {directMessagesData.length > 0 ? directMessagesData.map((conversation) => (
+                                        <div
+                                            key={conversation.id}
+                                            onClick={() => handleDirectMessageSelect(conversation)}
+                                            className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
+                                                selectedUserId === conversation.id
+                                                    ? "bg-purple-50 border-l-4 border-l-purple-500"
+                                                    : ""
+                                            }`}
+                                        >
+                                            <div className="flex items-center space-x-3">
+                                                <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-xl font-bold text-blue-600">
+                                                    {getInitials(conversation.name)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between">
+                                                        <h3 className="font-semibold text-gray-900 truncate">
+                                                            {conversation.name}
+                                                        </h3>
+                                                        <div className="flex items-center space-x-2">
+                                                            {conversation.unreadCount > 0 && (
+                                                                <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                                                                    {conversation.unreadCount}
+                                                                </span>
+                                                            )}
+                                                            <span className="text-xs text-gray-500">
+                                                                {conversation.lastMessageTime}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 truncate">
+                                                        {conversation.lastMessage}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500 mt-1">
+                                                        {conversation.email}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )) : (
+                                        <div className="p-8 text-center text-gray-500">
+                                            <p className="mb-2">No direct messages yet</p>
+                                            <p className="text-sm">Click "New Message" to start a conversation</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
                         {/* Messages Area */}
                         <div className="w-2/3 flex flex-col">
-                            {selectedGroup ? (
+                            {selectedGroup || selectedUserId ? (
                                 <>
                                     {/* Chat Header */}
                                     <div className="p-4 border-b border-gray-200">
                                         <div className="flex items-center space-x-3">
-                                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-xl">
-                                                {selectedGroup.avatar}
+                                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg font-bold text-purple-600">
+                                                {getInitials(selectedGroup ? selectedGroup.name : selectedUserName)}
                                             </div>
                                             <div className="flex-1">
                                                 <h2 className="font-bold text-gray-900">
-                                                    {selectedGroup.name}
+                                                    {selectedGroup ? selectedGroup.name : selectedUserName}
                                                 </h2>
                                                 <p className="text-sm text-gray-600">
-                                                    {selectedGroup.description}{" "}
-                                                    • {selectedGroup.members}{" "}
-                                                    members
+                                                    {selectedGroup
+                                                        ? `${selectedGroup.description} • ${selectedGroup.members} members`
+                                                        : 'Direct Message'
+                                                    }
                                                 </p>
                                             </div>
                                             <div className="flex items-center space-x-2 text-sm text-gray-500">
@@ -413,63 +421,75 @@ export default function Messages({ groups, messages }) {
 
                                     {/* Messages List */}
                                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                        {currentMessages.map((message) => (
-                                            <div
-                                                key={message.id}
-                                                className={`flex ${
-                                                    message.isOwn
-                                                        ? "justify-end"
-                                                        : "justify-start"
-                                                }`}
-                                            >
-                                                <div
-                                                    className={`max-w-xs lg:max-w-md ${
-                                                        message.isOwn
-                                                            ? "order-2"
-                                                            : "order-1"
-                                                    }`}
-                                                >
+                                        {loading ? (
+                                            <div className="flex items-center justify-center h-full">
+                                                <div className="text-gray-500">Loading messages...</div>
+                                            </div>
+                                        ) : messages.length > 0 ? (
+                                            <>
+                                                {messages.map((message) => (
                                                     <div
-                                                        className={`px-4 py-2 rounded-lg ${
+                                                        key={message.id}
+                                                        className={`flex ${
                                                             message.isOwn
-                                                                ? "bg-purple-600 text-white"
-                                                                : "bg-gray-200 text-gray-800"
+                                                                ? "justify-end"
+                                                                : "justify-start"
                                                         }`}
                                                     >
-                                                        {!message.isOwn && (
-                                                            <p className="text-xs font-semibold mb-1">
-                                                                {
-                                                                    message.sender
-                                                                }
+                                                        <div
+                                                            className={`max-w-xs lg:max-w-md ${
+                                                                message.isOwn
+                                                                    ? "order-2"
+                                                                    : "order-1"
+                                                            }`}
+                                                        >
+                                                            <div
+                                                                className={`px-4 py-2 rounded-lg ${
+                                                                    message.isOwn
+                                                                        ? "bg-purple-600 text-white"
+                                                                        : "bg-gray-200 text-gray-800"
+                                                                }`}
+                                                            >
+                                                                {!message.isOwn && (
+                                                                    <p className="text-xs font-semibold mb-1">
+                                                                        {message.sender}
+                                                                    </p>
+                                                                )}
+                                                                <p className="text-sm">
+                                                                    {message.message}
+                                                                </p>
+                                                            </div>
+                                                            <p
+                                                                className={`text-xs text-gray-500 mt-1 ${
+                                                                    message.isOwn
+                                                                        ? "text-right"
+                                                                        : "text-left"
+                                                                }`}
+                                                            >
+                                                                {formatTime(message.timestamp)}
                                                             </p>
-                                                        )}
-                                                        <p className="text-sm">
-                                                            {message.message}
-                                                        </p>
+                                                        </div>
+                                                        <div
+                                                            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold mx-2 ${
+                                                                message.isOwn
+                                                                    ? "order-1 bg-purple-300 text-purple-900"
+                                                                    : "order-2 bg-gray-300 text-gray-700"
+                                                            }`}
+                                                        >
+                                                            {getInitials(message.sender)}
+                                                        </div>
                                                     </div>
-                                                    <p
-                                                        className={`text-xs text-gray-500 mt-1 ${
-                                                            message.isOwn
-                                                                ? "text-right"
-                                                                : "text-left"
-                                                        }`}
-                                                    >
-                                                        {formatTime(
-                                                            message.timestamp
-                                                        )}
-                                                    </p>
-                                                </div>
-                                                <div
-                                                    className={`w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-semibold mx-2 ${
-                                                        message.isOwn
-                                                            ? "order-1"
-                                                            : "order-2"
-                                                    }`}
-                                                >
-                                                    {message.avatar}
+                                                ))}
+                                                <div ref={messagesEndRef} />
+                                            </>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-full">
+                                                <div className="text-center text-gray-500">
+                                                    <p className="text-4xl mb-2">💬</p>
+                                                    <p>No messages yet. Start the conversation!</p>
                                                 </div>
                                             </div>
-                                        ))}
+                                        )}
                                     </div>
 
                                     {/* Message Input */}
@@ -480,18 +500,16 @@ export default function Messages({ groups, messages }) {
                                         >
                                             <input
                                                 type="text"
-                                                value={newMessage}
+                                                value={data.message}
                                                 onChange={(e) =>
-                                                    setNewMessage(
-                                                        e.target.value
-                                                    )
+                                                    setData('message', e.target.value)
                                                 }
                                                 placeholder="Type your message..."
                                                 className="flex-1 px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                             />
                                             <button
                                                 type="submit"
-                                                disabled={!newMessage.trim()}
+                                                disabled={!data.message.trim() || processing}
                                                 className="px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
                                             >
                                                 <svg
@@ -518,11 +536,10 @@ export default function Messages({ groups, messages }) {
                                             💬
                                         </span>
                                         <h3 className="text-lg font-medium text-gray-900 mb-2">
-                                            Select a Group
+                                            Select a Group or Start a New Message
                                         </h3>
                                         <p className="text-gray-500">
-                                            Choose a group from the sidebar to
-                                            start messaging
+                                            Choose a group from the sidebar or click "New Message" to chat with someone
                                         </p>
                                     </div>
                                 </div>
@@ -530,7 +547,172 @@ export default function Messages({ groups, messages }) {
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+
+            {/* New Message Modal */}
+            {showNewMessageModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[600px] overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+                            <h2 className="text-lg font-bold text-gray-900">New Message</h2>
+                            <button
+                                onClick={() => {
+                                    setShowNewMessageModal(false);
+                                    setSearchQuery("");
+                                }}
+                                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {/* Search Bar */}
+                        <div className="p-4 border-b border-gray-200">
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search by name or email..."
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Users List */}
+                        <div className="overflow-y-auto max-h-[400px]">
+                            {filteredUsers.length > 0 ? (
+                                filteredUsers.map((user) => (
+                                    <div
+                                        key={user.id}
+                                        onClick={() => handleUserSelect(user)}
+                                        className="p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 transition-colors"
+                                    >
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-sm font-bold text-purple-600">
+                                                {getInitials(user.name)}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="font-semibold text-gray-900">{user.name}</p>
+                                                <p className="text-sm text-gray-500">{user.email}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="p-8 text-center text-gray-500">
+                                    {searchQuery ? (
+                                        <p>No users found matching "{searchQuery}"</p>
+                                    ) : (
+                                        <p>No users available in your residence</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Create Group Modal */}
+            {showCreateGroupModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto">
+                    <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 my-8">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Create New Group</h2>
+
+                        <form onSubmit={handleSubmitGroup}>
+                            <div className="space-y-4">
+                                {/* Group Name */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Group Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={groupData.name}
+                                        onChange={e => setGroupData('name', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                                        required
+                                        placeholder="e.g., Floor 2 Group, Study Group"
+                                    />
+                                    {groupErrors.name && <p className="text-red-600 text-sm mt-1">{groupErrors.name}</p>}
+                                </div>
+
+                                {/* Group Description */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Description
+                                    </label>
+                                    <textarea
+                                        value={groupData.description}
+                                        onChange={e => setGroupData('description', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-green-500 focus:border-green-500"
+                                        rows="3"
+                                        placeholder="Optional description for the group"
+                                    />
+                                    {groupErrors.description && <p className="text-red-600 text-sm mt-1">{groupErrors.description}</p>}
+                                </div>
+
+                                {/* Member Selection */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Select Members * (Select at least one)
+                                    </label>
+                                    <div className="border border-gray-300 rounded max-h-64 overflow-y-auto">
+                                        {residenceUsers.map((user) => (
+                                            <div
+                                                key={user.id}
+                                                onClick={() => handleMemberToggle(user.id)}
+                                                className={`p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors flex items-center space-x-3 ${
+                                                    selectedMembers.includes(user.id) ? 'bg-green-50' : ''
+                                                }`}
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedMembers.includes(user.id)}
+                                                    onChange={() => {}}
+                                                    className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                                />
+                                                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-sm font-bold text-blue-600">
+                                                    {getInitials(user.name)}
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="font-semibold text-gray-900">{user.name}</p>
+                                                    <p className="text-sm text-gray-500">{user.email}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-sm text-gray-500 mt-2">
+                                        {selectedMembers.length} member{selectedMembers.length !== 1 ? 's' : ''} selected
+                                    </p>
+                                    {groupErrors.member_ids && <p className="text-red-600 text-sm mt-1">{groupErrors.member_ids}</p>}
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex space-x-3 mt-6">
+                                <button
+                                    type="submit"
+                                    disabled={processingGroup || selectedMembers.length === 0}
+                                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {processingGroup ? 'Creating...' : 'Create Group'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowCreateGroupModal(false);
+                                        resetGroup();
+                                        setSelectedMembers([]);
+                                    }}
+                                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </StudentLayout>
     );
 }

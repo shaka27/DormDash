@@ -1,7 +1,5 @@
-// resources/js/Pages/StudentLayout.jsx
 import React, { useState, useEffect } from 'react';
 import axios from "axios";
-axios.defaults.withCredentials = true;
 import { Link, usePage, router } from '@inertiajs/react';
 import {
   Home,
@@ -28,24 +26,25 @@ export default function StudentLayout({ children }) {
   const { url } = usePage();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  
 
   // 🔹 Fetch unread notifications count
   useEffect(() => {
-      const fetchNotificationCount = async () => {
-        try {
-          // Step 1: Get CSRF cookie for Sanctum
-          await axios.get("http://localhost:8000/sanctum/csrf-cookie");
+    const fetchNotificationCount = async () => {
+      try {
+        const response = await axios.get('/notifications/count');
+        setNotificationCount(response.data.count);
+      } catch (error) {
+        console.error("Error fetching notification count:", error);
+      }
+    };
 
-          // Step 2: Fetch count
-          const res = await axios.get("http://localhost:8000/api/notifications/count");
-          setNotificationCount(res.data.count || 0);
-        } catch (err) {
-          console.error("Error fetching notification count:", err);
-        }
-      };
+    fetchNotificationCount();
 
-      fetchNotificationCount();
-    }, []);
+    // Optional: auto-refresh every 60 seconds
+    const interval = setInterval(fetchNotificationCount, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Extract user roles and create role checking helpers
   const userRoles = auth.user?.roles?.map(role => role.description) || [];
@@ -167,39 +166,44 @@ export default function StudentLayout({ children }) {
   return (
     <div className="d-flex" style={{ height: "100vh" }}>
       {/* Sidebar */}
-      <div
-        className={`bg-light border-end p-3 ${sidebarOpen ? 'd-block' : 'd-none'} d-lg-block`}
-        style={{ width: "250px" }}
-      >
-        <div className="d-flex justify-content-between align-items-center mb-4">
-
-          <h1 className="mb-0">
-          <Hotel size={18} className="me-1" />DormDash</h1>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="btn-close d-lg-none"
-            aria-label="Close"
+        <div
+          className={`bg-light border-end p-3 ${sidebarOpen ? 'd-block' : 'd-none'} d-lg-block`}
+          style={{ width: "250px" }}
+        >
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <div className="d-flex align-items-center">
+          <img 
+            src="/logo.png" 
+            alt="DormDash" 
+            style={{ height: "32px", width: "auto" }}
+            className="me-2"
           />
-        </div>
+            </div>
+            <button
+          onClick={() => setSidebarOpen(false)}
+          className="btn-close d-lg-none"
+          aria-label="Close"
+            />
+          </div>
 
-        <ul className="nav flex-column">
-          {visibleNavigation.map((item) => (
-            <li key={item.name} className="nav-item">
-              <Link
-                href={item.href}
-                className={`nav-link d-flex align-items-center ${
-                    item.current ? 'active fw-bold text-dark' : 'text-muted'
-                }`}
-                >
-                <item.icon className="me-2" size={18} />
-                {item.name}
-            </Link>
+          <ul className="nav flex-column">
+            {visibleNavigation.map((item) => (
+          <li key={item.name} className="nav-item">
+            <Link
+              href={item.href}
+              className={`nav-link d-flex align-items-center ${
+              item.current ? 'active fw-bold text-dark' : 'text-muted'
+              }`}
+              >
+              <item.icon className="me-2" size={18} />
+              {item.name}
+          </Link>
 
-            </li>
-          ))}
-        </ul>
+          </li>
+            ))}
+          </ul>
 
-        {/* User section */}
+          {/* User section */}
         <div className="mt-auto pt-3 border-top">
           <div className="d-flex align-items-center">
             <div
@@ -234,40 +238,40 @@ export default function StudentLayout({ children }) {
 
       {/* Main content */}
       <div className="flex-grow-1 d-flex flex-column">
-        {/* Top bar */}
-        <header className="bg-white border-bottom p-3">
-          <div className="d-flex justify-content-between align-items-center">
-            <div className="d-flex align-items-center">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="btn btn-outline-secondary d-lg-none me-2"
-              >
-                ☰
-              </button>
-              <h5 className="mb-0">Dashboard</h5>
-            </div>
-            <Link
-                href="/notifications"
-                className="btn btn-notification position-relative me-2"
+
+          <header className="border-bottom p-3" style={{ backgroundColor: '#d8b4fe' }}>
+            <div className="d-flex justify-content-between align-items-center">
+              <div className="d-flex align-items-center">
+                <button
+            onClick={() => setSidebarOpen(true)}
+            className="btn btn-outline-dark d-lg-none me-2"
                 >
-                <Bell size={18} className="me-1" />
-                Notifications
-                {notificationCount > 0 && (
-                <span
-                  className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                  style={{ fontSize: "0.6rem" }}
-                >
-                  {notificationCount}
-                </span>
-              )}
+            ☰
+                </button>
+                <h1 className="mb-0 text-dark fw-bold" style={{ fontSize: '1.5rem', color: '#ffffffff' }}>{visibleNavigation.find(item => item.current)?.name || 'Dashboard'}</h1>
+              </div>
+              <Link
+            href="/notifications"
+            className="btn btn-outline-dark position-relative me-2"
+            >
+            <Bell size={18} className="me-1" />
+            Notifications
+            {notificationCount > 0 && (
+            <span
+              className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+              style={{ fontSize: "0.6rem" }}
+            >
+              {notificationCount}
+            </span>
+                )}
 
-            </Link>
+              </Link>
 
-            </div>
+              </div>
 
-        </header>
+          </header>
 
-        {/* Page content */}
+          {/* Page content */}
         <main className="flex-grow-1 p-4">{children}</main>
       </div>
     </div>

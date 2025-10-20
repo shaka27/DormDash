@@ -16,7 +16,7 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         // Create admin user (idempotent)
-        $adminEmail = '12ajmostert12@gmail.com';
+        $adminEmail = 'evankyletitus27@gmail.com';
         $admin = User::firstOrCreate(
             ['email' => $adminEmail],
             [

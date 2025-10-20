@@ -5,106 +5,154 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Event;
 use Inertia\Inertia;
-use App\Events\EventCreated;
-use App\Events\EventUpdated;
-use App\Events\EventDeleted;
+
 class EventController extends Controller
 {
     public function index()
     {
-        $events = Event::all();
+        $user = auth()->user();
+        
+        // Get all events and check if current user has RSVP'd
+        $events = Event::with('attendees')
+            ->orderBy('date', 'desc')
+            ->get()
+            ->map(function ($event) use ($user) {
+                $event->rsvp = $event->attendees->contains('id', $user->id);
+                return $event;
+            });
 
         return Inertia::render("Student_Dashboard/Events", ["events" => $events]);
     }
 
+    // Show the edit event form
+    public function edit(Event $event)
+    {
+        return Inertia::render('Student_Dashboard/EditEvent', ['event' => $event]);
+    }
+
     public function getEventDetailsPage($event)
     {
-        $event = Event::findOrFail($event);
+        $event = Event::with('attendees')->findOrFail($event);
+        $user = auth()->user();
+        
+        // Check if current user has RSVP'd
+        $event->rsvp = $event->attendees->contains('id', $user->id);
+        
         return Inertia::render('Student_Dashboard/EventDetails', ['event' => $event]);
     }
 
     /**
-     * Return amount of upcomming events
+     * Return amount of upcoming events
      */
     public function upcommingEvents()
     {
-        // Get current time with Carbon
         $now = now();
-        $upcomingEvents = Event::where('date', '>', $now)->get();
-        // Count them
-        $count = $upcomingEvents->count();
-        // Return as JSON (or however you need it)
+        $count = Event::where('date', '>', $now)->count();
+        
         return response()->json([
             'count' => $count
         ]);
     }
     
     /**
-     * Return 3 upcomming events
+     * Return 3 upcoming events
      */
     public function upcoming()
-    {
-        $events = \App\Models\Event::where('date', '>=', now())
-            ->orderBy('date', 'asc')
-            ->take(3)
-            ->get();
+{
+    $user = auth()->user();
 
-        return response()->json($events);
-    }
+    $events = Event::with('attendees')
+        ->where('date', '>=', now())
+        ->orderBy('date', 'asc')
+        ->take(3)
+        ->get()
+        ->map(function ($event) use ($user) {
+            $event->rsvp = $user
+                ? $event->attendees->contains('id', $user->id)
+                : false;
+            return $event;
+        });
 
-    // CREATE - Broadcast to all users
+    return response()->json($events);
+}
+
+
+    // CREATE - Save to database
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string',
+            'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'date' => 'required|date',
-            'location' => 'nullable|string',
+            'location' => 'nullable|string|max:255',
         ]);
 
         $event = Event::create($validated);
 
-        // Broadcast to all connected users
-        broadcast(new EventCreated($event))->toOthers();
-
-        return response()->json($event, 201);
+        // Redirect back to events list with success message
+        return redirect()->route('events.index')->with('success', 'Event created successfully!');
     }
 
-    // UPDATE - Broadcast to all users
-    public function update(Request $request, $id)
+    // UPDATE - Save to database
+    public function update(Request $request, Event $event)
     {
-        $event = Event::findOrFail($id);
-
         $validated = $request->validate([
-            'name' => 'sometimes|string',
-            'discription' => 'sometimes|string',
-            'date' => 'sometimes|date',
-            'location' => 'sometimes|string',
+            'name' => 'sometimes|required|string|max:255',
+            'description' => 'sometimes|nullable|string',
+            'date' => 'sometimes|required|date',
+            'location' => 'sometimes|nullable|string|max:255',
         ]);
 
         $event->update($validated);
 
-        // Broadcast update to all connected users
-        broadcast(new EventUpdated($event))->toOthers();
-
-        return response()->json($event, 200);
+        // Redirect back to events list with success message
+        return redirect()->route('events.index')->with('success', 'Event updated successfully!');
     }
 
-    // DELETE - Broadcast to all users
-    public function destroy($id)
+    // DELETE - Remove from database
+    public function destroy(Event $event)
     {
-        $event = Event::findOrFail($id);
-        $eventId = $event->id;
         $event->delete();
 
-        // Broadcast deletion to all connected users
-        broadcast(new EventDeleted($eventId))->toOthers();
-
-        return response()->json(['message' => 'Event deleted'], 200);
+        // Redirect back with success message
+        return redirect()->route('events.index')->with('success', 'Event deleted successfully!');
     }
 
     public function create()
-{
-    return Inertia::render('Student_Dashboard/CreateEvent');
-}
+    {
+        return Inertia::render('Student_Dashboard/CreateEvent');
+    }
+
+    public function rsvp(Request $request, $eventId)
+    {
+        $event = Event::findOrFail($eventId);
+        $user = auth()->user();
+
+        // Check if user already RSVP'd
+        if ($event->attendees()->where('user_id', $user->id)->exists()) {
+            return response()->json(['message' => 'Already RSVP\'d'], 400);
+        }
+
+        // Attach user to event
+        $event->attendees()->attach($user->id);
+
+        return response()->json([
+            'message' => 'RSVP successful',
+            'rsvp' => true
+        ], 200);
+    }
+
+    public function cancelRsvp(Request $request, $eventId)
+    {
+        $event = Event::findOrFail($eventId);
+        $user = auth()->user();
+
+        // Detach user from event
+        $event->attendees()->detach($user->id);
+
+        return response()->json([
+            'message' => 'RSVP cancelled',
+            'rsvp' => false
+        ], 200);
+    }
 }
