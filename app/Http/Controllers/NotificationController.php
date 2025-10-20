@@ -6,6 +6,9 @@ use App\Models\Notification;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Auth;
+use App\Events\NotificationCreated;
+use App\Events\NotificationUpdated;
+use App\Events\NotificationDeleted;
 
 class NotificationController extends Controller
 {
@@ -125,6 +128,11 @@ class NotificationController extends Controller
             'is_read' => false, // ensure unread when created
         ]);
 
+        $notification->load('sender');
+
+        // broadcast creation
+        event(new NotificationCreated($notification));
+
         return response()->json(['notification' => $notification->load('sender')], 201);
     }
 
@@ -166,6 +174,10 @@ class NotificationController extends Controller
         ]);
 
         $notification->update($data);
+        $notification->load('sender');
+
+        // broadcast update
+        event(new NotificationUpdated($notification));
 
         return response()->json([
             'message' => 'Notification updated',
@@ -182,7 +194,13 @@ class NotificationController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
+        // capture data for broadcast after delete
+        $notification->load('sender');
+
         $notification->delete();
+
+        // broadcast deletion (sends id & residence in event)
+        event(new NotificationDeleted($notification));
 
         return response()->json(['message' => 'Notification deleted']);
     }
@@ -192,9 +210,13 @@ class NotificationController extends Controller
      */
     public function markAsRead(Notification $notification)
     {
-        // optionally check user/residence authorization
         $notification->update(['is_read' => true]);
-        return response()->json(['message' => 'marked']);
+        $notification->load('sender');
+
+        // optional: broadcast update so clients refresh unread count / UI
+        event(new NotificationUpdated($notification));
+
+        return response()->json(['message' => 'Notification marked as read']);
     }
 
     /**

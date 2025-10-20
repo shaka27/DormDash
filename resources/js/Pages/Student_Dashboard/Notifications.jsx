@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { route } from 'ziggy-js';
-import axios from '../../axiosSetup'; // ensure this is correct path
+import axios from '../../axiosSetup';
+
 import StudentLayout from './StudentLayout';
 
 export default function Notifications({ notifications: initialNotifications = [], user, canManage }) {
@@ -39,6 +40,32 @@ export default function Notifications({ notifications: initialNotifications = []
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    // real-time: listen for broadcasts (optional - requires Laravel Echo + server broadcasting)
+    try {
+      const residenceId = user?.residence_id;
+      if (window.Echo && residenceId) {
+        const channel = window.Echo.channel(`residence.${residenceId}`);
+        channel.listen('.NotificationCreated', (e) => {
+          setNotifications(prev => [e.notification, ...prev]);
+        });
+        channel.listen('.NotificationUpdated', (e) => {
+          setNotifications(prev => prev.map(n => n.id === e.notification.id ? e.notification : n));
+        });
+        channel.listen('.NotificationDeleted', (e) => {
+          setNotifications(prev => prev.filter(n => n.id !== e.id));
+        });
+        return () => {
+          channel.stopListening('.NotificationCreated');
+          channel.stopListening('.NotificationUpdated');
+          channel.stopListening('.NotificationDeleted');
+        };
+      }
+    } catch (err) {
+      console.warn('Echo not configured', err);
+    }
+  }, [user]);
 
   // Resolve residence id for admin create: prefer user's residence_id, otherwise infer from first notification
   const resolveResidenceId = () => {

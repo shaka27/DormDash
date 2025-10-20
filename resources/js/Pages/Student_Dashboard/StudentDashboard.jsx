@@ -99,6 +99,7 @@ export default function StudentDashboard() {
     const [activeVoteCount, setActiveVoteCount] = useState(0);
     const [pendingRequestCount, setPendingRequestCount] = useState(0);
     const [recentAnnouncement, setRecentAnnouncement] = useState([]);
+    const [notificationCount, setNotificationCount] = useState(0); // added
     const [events, setEvents] = useState([]);
     const [error, setError] = useState(null);
 
@@ -125,7 +126,7 @@ export default function StudentDashboard() {
                     axios.get("/api/user/count"),
                     axios.get("/api/events/upcoming", { withCredentials: true }),
                     axios.get("/api/events/upcoming/count"),
-                    axios.get("/api/notifications/recent"),
+                    axios.get("/api/notifications/recent"), // keep existing call
                     axios.get("/api/vote/activeVotes/count"),
                     axios.get("/api/maintenance_requests/pendingRequest/count")
                 ]);
@@ -133,7 +134,25 @@ export default function StudentDashboard() {
                 setStudentCount(studentRes.data.count);
                 setEvents(eventsRes.data);
                 setUpcomingCount(upcomingRes.data.count);
-                setRecentAnnouncement(notificationsRes.data.data || []);
+
+                // support multiple response shapes (notifications endpoint may return { notifications: [...] } or { data: [...] })
+                const notifs = notificationsRes.data.notifications ?? notificationsRes.data.data ?? notificationsRes.data ?? [];
+                setRecentAnnouncement(notifs);
+
+                // try to fetch unread/count - prefer API route then fallback to non-API route
+                try {
+                    const countRes = await axios.get('/api/notifications/count');
+                    setNotificationCount(countRes.data.count ?? 0);
+                } catch (e) {
+                    try {
+                        const countRes2 = await axios.get('/notifications/count');
+                        setNotificationCount(countRes2.data.count ?? 0);
+                    } catch (e2) {
+                        // fallback to length of recent announcements if count endpoint not available
+                        setNotificationCount(Array.isArray(notifs) ? notifs.length : 0);
+                    }
+                }
+
                 setActiveVoteCount(votesRes.data.count);
                 setPendingRequestCount(maintenanceRes.data.count);
             } catch (err) {
@@ -175,11 +194,13 @@ export default function StudentDashboard() {
                             <StatCard title="Pending Requests" value={pendingRequestCount} subtitle="Maintenance & Issues" icon="⚠️" iconBg="bg-orange-100" iconColor="text-orange-600" />
                             <StatCard title="Upcoming Events" value={upcomingCount} subtitle="This week" icon="📅" iconBg="bg-green-100" iconColor="text-green-600" />
                             <StatCard title="Active Votes" value={activeVoteCount} subtitle="In progress" icon="🗳️" iconBg="bg-purple-100" iconColor="text-purple-600" />
+                            {/* show notifications count for admins as well */}
+                            <StatCard title="New Announcements" value={notificationCount} subtitle="Today" icon="🔔" iconBg="bg-yellow-100" iconColor="text-yellow-600" />
                         </>
                     ) : (
                         <>
                             <StatCard title="Upcoming Events" value={upcomingCount} subtitle="This week" icon="📅" iconBg="bg-green-100" iconColor="text-green-600" />
-                            <StatCard title="New Announcements" value={recentAnnouncement.length} subtitle="Today" icon="🔔" iconBg="bg-yellow-100" iconColor="text-yellow-600" />
+                            <StatCard title="New Announcements" value={notificationCount} subtitle="Today" icon="🔔" iconBg="bg-yellow-100" iconColor="text-yellow-600" />
                             <StatCard title="Active Votes" value={activeVoteCount} subtitle="Cast your vote" icon="🗳️" iconBg="bg-purple-100" iconColor="text-purple-600" />
                             <StatCard title="Unread Messages" value="5" subtitle="New" icon="💬" iconBg="bg-blue-100" iconColor="text-blue-600" />
                         </>
