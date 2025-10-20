@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\MaintenanceRequestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -8,7 +7,6 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ResidenceController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\MaintenanceRequestController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\EventController;
